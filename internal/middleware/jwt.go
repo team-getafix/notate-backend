@@ -1,92 +1,95 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/team-getafix/notate/config"
 )
 
-var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
+type CustomClaims struct {
+	UserID uint   `json:"user_id"`
+	Role   string `json:"role"`
+
+	jwt.RegisteredClaims
+}
 
 func JWTMiddleware(allowedRoles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "missing authorization header"})
-			c.Abort()
+		tokenString := extractToken(c)
+		if tokenString == "" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "authorization required"})
 
 			return
 		}
 
-		tokenString := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer"))
-		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-			}
-
-			return jwtSecret, nil
-		})
-
-		if err != nil || !token.Valid {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
-			c.Abort()
-
-			return
+		claims, err := validateToken(tokenString)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
 		}
 
-		claims, ok := token.Claims.(jwt.MapClaims)
-		if !ok || !token.Valid {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token claims"})
-			c.Abort()
-
-			return
+		if !isRoleAllowed(claims.Role, allowedRoles) {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "insufficient permissions"})
 		}
 
-		if exp, ok := claims["exp"].(float64); ok {
-			if time.Unix(int64(exp), 0).Before(time.Now()) {
-				c.JSON(http.StatusUnauthorized, gin.H{"error": "token expired"})
-				c.Abort()
-
-				return
-			}
-		}
-
-		role, ok := claims["role"].(string)
-		if !ok {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid role in token"})
-			c.Abort()
-
-			return
-		}
-
-		if len(allowedRoles) > 0 {
-			allowed := false
-			for _, r := range allowedRoles {
-				if role == r {
-					allowed = true
-
-					break
-				}
-			}
-
-			if !allowed {
-				c.JSON(http.StatusForbidden, gin.H{"error": "access denied"})
-				c.Abort()
-
-				return
-			}
-		}
-
-		if userID, ok := claims["user_id"].(float64); ok {
-			c.Set("userID", uint(userID))
-		}
-
-		c.Set("role", role)
+		c.Set("userID", claims.UserID)
+		c.Set("role", claims.Role)
 		c.Next()
 	}
+}
+
+func extractToken(c *gin.Context) string {
+	bearerToken := c.GetHeader("Authorization")
+	if bearerToken == "" {
+		return ""
+	}
+
+	parts := strings.SplitN(bearerToken, " ", 2)
+	if len(parts) != 2 || parts[0] != "Bearer" {
+		return ""
+	}
+
+	return strings.TrimSpace(parts[1])
+}
+
+func validateToken(tokenString string) (*CustomClaims, error) {
+	cfg := config.Get()
+
+	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, jwt.ErrSignatureInvalid
+		}
+		return []byte(cfg.JWTSecret), nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
+		if claims.ExpiresAt != nil && claims.ExpiresAt.Time.Before(time.Now()) {
+			return nil, jwt.ErrTokenExpired
+		}
+
+		return claims, nil
+	}
+
+	return nil, jwt.ErrTokenInvalidClaims
+}
+
+func isRoleAllowed(userRole string, allowedRoles []string) bool {
+	if len(allowedRoles) == 0 {
+		return true
+	}
+
+	for _, role := range allowedRoles {
+		if userRole == role {
+			return true
+		}
+	}
+
+	return false
 }

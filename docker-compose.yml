@@ -1,15 +1,15 @@
 services:
-  auth-service:
-    build: .
-    container_name: auth-service
-    environment:
-      - AUTH_DB_URL=postgres://admin:compsci@postgres:5432/auth_db?sslmode=disable
-    depends_on:
-      - postgres
-    ports:
-      - "3001:3001"
-    networks:
-      - notate-network
+  # auth-service:
+  #   build: .
+  #   container_name: auth-service
+  #   environment:
+  #     - AUTH_DB_URL=postgres://admin:compsci@postgres:5432/auth_db?sslmode=disable
+  #   depends_on:
+  #     - postgres
+  #   ports:
+  #     - "3001:3001"
+  #   networks:
+  #     - notate-network
 
   postgres:
     image: postgres:latest
