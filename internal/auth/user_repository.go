@@ -1,15 +1,15 @@
-package repositories
+package auth
 
 import (
 	"errors"
 
-	"github.com/team-getafix/notate/internal/models"
 	"gorm.io/gorm"
 )
 
+// defines method for user data access
 type UserRepository interface {
-	CreateUser(user *models.User) error
-	GetUserByEmail(email string) (*models.User, error)
+	CreateUser(user *User) error
+	GetUserByEmail(email string) (*User, error)
 }
 
 type userRepository struct {
@@ -20,12 +20,12 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 	return &userRepository{db}
 }
 
-func (r *userRepository) CreateUser(user *models.User) error {
+func (r *userRepository) CreateUser(user *User) error {
 	return r.db.Create(user).Error
 }
 
-func (r *userRepository) GetUserByEmail(email string) (*models.User, error) {
-	var user models.User
+func (r *userRepository) GetUserByEmail(email string) (*User, error) {
+	var user User
 	err := r.db.Where("email = ?", email).First(&user).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil

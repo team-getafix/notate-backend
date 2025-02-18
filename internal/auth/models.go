@@ -1,4 +1,4 @@
-package models
+package auth
 
 const (
 	RoleStudent = "student"
@@ -6,6 +6,7 @@ const (
 	RoleAdmin   = "admin"
 )
 
+// represents a user in the database
 type User struct {
 	ID       uint   `json:"id" gorm:"primaryKey"`
 	Email    string `json:"email" gorm:"unique" binding:"required"`
