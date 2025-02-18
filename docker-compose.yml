@@ -1,0 +1,45 @@
+services:
+  auth-service:
+    build: .
+    container_name: auth-service
+    environment:
+      - AUTH_DB_URL=postgres://admin:compsci@postgres:5432/auth_db?sslmode=disable
+    depends_on:
+      - postgres
+    ports:
+      - "3001:3001"
+    networks:
+      - notate-network
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: compsci
+      POSTGRES_DB: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - notate-network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: compsci
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - notate-network
+
+volumes:
+  postgres-data:
+
+networks:
+  notate-network:
