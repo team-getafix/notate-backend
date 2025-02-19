@@ -59,6 +59,14 @@ export const updateClass = async (req: AuthRequest, res: Response, next: NextFun
   try {
     const { id } = req.params;
     const { name, subjectIds, studentIds } = req.body;
+
+    const existingClass = await prisma.class.findUnique({ where: { id } });
+    if (!existingClass) {
+      res.status(404).json({ error: "class not found" });
+
+      return;
+    }
+
     const updatedClass = await prisma.class.update({
       where: { id },
       data: {
@@ -71,7 +79,7 @@ export const updateClass = async (req: AuthRequest, res: Response, next: NextFun
       include: { subjects: true },
     });
 
-    res.json(updatedClass);
+    res.json({ message: "class updated successfully" });
   } catch (error) {
     next(error);
   }
@@ -80,11 +88,19 @@ export const updateClass = async (req: AuthRequest, res: Response, next: NextFun
 export const deleteClass = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
-    const deletedClass = await prisma.class.delete({
+
+    const existingClass = await prisma.class.findUnique({ where: { id } });
+    if (!existingClass) {
+      res.status(404).json({ error: "class not found" });
+
+      return;
+    }
+
+    await prisma.class.delete({
       where: { id },
     });
 
-    res.json(deletedClass);
+    res.json({ message: "class deleted successfully" });
   } catch (error) {
     next(error);
   }
