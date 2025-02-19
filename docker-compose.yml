@@ -1,45 +1,46 @@
 services:
-  # auth-service:
-  #   build: .
-  #   container_name: auth-service
-  #   environment:
-  #     - AUTH_DB_URL=postgres://admin:compsci@postgres:5432/auth_db?sslmode=disable
-  #   depends_on:
-  #     - postgres
-  #   ports:
-  #     - "3001:3001"
-  #   networks:
-  #     - notate-network
-
   postgres:
-    image: postgres:latest
-    container_name: postgres
+    image: postgres
+    restart: always
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: compsci
-      POSTGRES_DB: postgres
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
+      POSTGRES_DB: notatedb
     ports:
       - "5432:5432"
-    networks:
-      - notate-network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
   pgadmin:
     image: dpage/pgadmin4
-    container_name: pgadmin
+    restart: always
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@example.com
-      PGADMIN_DEFAULT_PASSWORD: compsci
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
     ports:
       - "5050:80"
     depends_on:
       - postgres
-    networks:
-      - notate-network
+
+  auth-service:
+    container_name: auth-service
+    build: ./services/auth-service
+    ports:
+      - "4001:4001"
+    depends_on:
+      - postgres
+    environment:
+      - DATABASE_URL=postgresql://admin:compsci@postgres:5432/notatedb?schema=public
+    env_file:
+      - ./services/auth-service/.env
+
+  api-gateway:
+    container_name: api-gateway
+    build: ./api-gateway/
+    ports:
+      - "3000:3000"
+    depends_on:
+      - auth-service
 
 volumes:
-  postgres-data:
-
-networks:
-  notate-network:
+  postgres_data:
