@@ -23,6 +23,16 @@ const authProxy = createProxyMiddleware({
   },
 });
 
+const classProxy = createProxyMiddleware({
+  target: 'http://class-service:4002',
+  changeOrigin: true,
+  pathRewrite: (path: string) => `/class${path}`,
+  on: {
+    proxyReq: bodyReconstructor
+  },
+});
+
 app.use("/api/auth", authProxy);
+app.use("/api/class", classProxy);
 
 export default app;
