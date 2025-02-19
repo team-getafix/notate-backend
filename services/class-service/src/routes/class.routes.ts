@@ -130,7 +130,7 @@ router.get("/:id", authenticateJWT, requireRoles(["teacher", "admin"]), validati
  *       404:
  *         description: Class not found
  */
-router.put("/:id", authenticateJWT, requireAdmin, validationMiddleware(UpdateClassDto), updateClass);
+router.patch("/:id", authenticateJWT, requireAdmin, validationMiddleware(UpdateClassDto), updateClass);
 
 /**
  * @swagger
