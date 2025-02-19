@@ -3,6 +3,8 @@ import {
   getStudentSubjects
 } from "../controllers/student.controller";
 
+import { requireTeacherAdmin } from "../middlewares/auth.middleware";
+
 const router = Router();
 
 /**
@@ -11,6 +13,8 @@ const router = Router();
  *   get:
  *     summary: Retrieve subjects for a student
  *     tags: [Student]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -37,6 +41,6 @@ const router = Router();
  *       500:
  *         description: Server error.
  */
-router.get("/:id/subjects", getStudentSubjects);
+router.get("/:id/subjects", requireTeacherAdmin, getStudentSubjects);
 
 export default router;

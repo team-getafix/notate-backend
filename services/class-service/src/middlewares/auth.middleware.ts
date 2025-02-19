@@ -69,3 +69,4 @@ export const requireTeacherForSubject = async (req: AuthRequest, res: Response, 
 export const requireAdmin = requireRoles(["admin"]);
 export const requireTeacher = requireRoles(["teacher"]);
 export const requireStudent = requireRoles(["student"]);
+export const requireTeacherAdmin = requireRoles(["admin", "teacher"]);

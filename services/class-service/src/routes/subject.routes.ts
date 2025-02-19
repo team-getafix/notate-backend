@@ -7,6 +7,8 @@ import {
   deleteSubject,
 } from "../controllers/subject.controller";
 
+import { authenticateJWT, requireAdmin, requireTeacherAdmin, requireTeacherForSubject } from "../middlewares/auth.middleware";
+
 const router = Router();
 
 /**
@@ -15,6 +17,8 @@ const router = Router();
  *   post:
  *     summary: Create a new subject
  *     tags: [Subjects]
+ *     security:
+ *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -39,7 +43,7 @@ const router = Router();
  *       400:
  *         description: Bad request, missing required fields
  */
-router.post("/", createSubject);
+router.post("/", authenticateJWT, requireAdmin, createSubject);
 
 /**
  * @swagger
@@ -47,11 +51,13 @@ router.post("/", createSubject);
  *   get:
  *     summary: Retrieve a list of all subjects
  *     tags: [Subjects]
+ *     security:
+ *       - BearerAuth: []
  *     responses:
  *       200:
  *         description: A list of subjects
  */
-router.get("/", getSubjects);
+router.get("/", authenticateJWT, requireAdmin, getSubjects);
 
 /**
  * @swagger
@@ -59,6 +65,8 @@ router.get("/", getSubjects);
  *   get:
  *     summary: Get a subject by ID
  *     tags: [Subjects]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -72,14 +80,16 @@ router.get("/", getSubjects);
  *       404:
  *         description: Subject not found
  */
-router.get("/:id", getSubjectById);
+router.get("/:id", authenticateJWT, requireTeacherForSubject, getSubjectById);
 
 /**
  * @swagger
  * /subjects/{id}:
- *   put:
+ *   patch:
  *     summary: Update a subject by ID
  *     tags: [Subjects]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -110,7 +120,7 @@ router.get("/:id", getSubjectById);
  *       404:
  *         description: Subject not found
  */
-router.put("/:id", updateSubject);
+router.patch("/:id", authenticateJWT, requireTeacherForSubject, requireAdmin, updateSubject);
 
 /**
  * @swagger
@@ -118,6 +128,8 @@ router.put("/:id", updateSubject);
  *   delete:
  *     summary: Delete a subject
  *     tags: [Subjects]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -144,6 +156,6 @@ router.put("/:id", updateSubject);
  *       500:
  *         description: Server error.
  */
-router.delete("/:id", deleteSubject);
+router.delete("/:id", authenticateJWT, requireAdmin, deleteSubject);
 
 export default router;

@@ -26,6 +26,8 @@ const router = Router();
  *   post:
  *     summary: Create a new class
  *     tags: [Classes]
+ *     security:
+ *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -61,6 +63,8 @@ router.post("/", authenticateJWT, requireAdmin, validationMiddleware(CreateClass
  * /classes:
  *   get:
  *     summary: Retrieve a list of all classes
+ *     security:
+ *       - BearerAuth: []
  *     tags: [Classes]
  *     responses:
  *       200:
@@ -73,6 +77,8 @@ router.get("/", authenticateJWT, requireAdmin, getClasses);
  * /classes/{id}:
  *   get:
  *     summary: Get a class by ID
+ *     security:
+ *       - BearerAuth: []
  *     tags: [Classes]
  *     parameters:
  *       - in: path
@@ -94,6 +100,8 @@ router.get("/:id", authenticateJWT, requireRoles(["teacher", "admin"]), getClass
  * /classes/{id}:
  *   patch:
  *     summary: Update a class by ID
+ *     security:
+ *       - BearerAuth: []
  *     tags: [Classes]
  *     parameters:
  *       - in: path
@@ -137,6 +145,8 @@ router.patch("/:id", authenticateJWT, requireAdmin, validationMiddleware(UpdateC
  * /classes/{id}:
  *   delete:
  *     summary: Delete a class by ID
+ *     security:
+ *       - BearerAuth: []
  *     tags: [Classes]
  *     parameters:
  *       - in: path
@@ -158,6 +168,8 @@ router.delete("/:id", authenticateJWT, requireAdmin, deleteClass);
  * /classes/{id}/subjects:
  *   get:
  *     summary: Get subjects of a specific class
+ *     security:
+ *       - BearerAuth: []
  *     tags: [Classes]
  *     parameters:
  *       - in: path
