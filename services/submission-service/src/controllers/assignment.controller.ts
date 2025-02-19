@@ -1,8 +1,8 @@
-import { Request, Response } from 'express';
-import { classServiceClient, getSubject } from '../utils/service-client';
-import { EnrichedAssignment } from '../types';
-import { AuthRequest } from '../middlewares/auth.middleware';
-import prisma from '../utils/prisma';
+import type { NextFunction, Request, Response } from "express";
+import { classServiceClient, getSubject } from "../utils/service-client";
+import { EnrichedAssignment } from "../types";
+import { AuthRequest } from "../middlewares/auth.middleware";
+import prisma from "../utils/prisma";
 
 export const createAssignment = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -12,7 +12,7 @@ export const createAssignment = async (req: AuthRequest, res: Response): Promise
     const subject = await getSubject(subjectId, req.headers.authorization!);
 
     if (!subject || !subject.teacherIds.includes(teacherId)) {
-      res.status(403).json({ error: 'Not authorized for this subject' })
+      res.status(403).json({ error: "Not authorized for this subject" })
 
       return;
     }
@@ -34,8 +34,8 @@ export const createAssignment = async (req: AuthRequest, res: Response): Promise
 
     res.status(201).json(enrichedAssignment);
   } catch (error) {
-    console.error('Assignment creation error:', error);
-    res.status(500).json({ error: 'Failed to create assignment' });
+    console.error("Assignment creation error:", error);
+    res.status(500).json({ error: "Failed to create assignment" });
   }
 };
 
@@ -47,7 +47,7 @@ export const getAssignment = async (req: Request, res: Response): Promise<void> 
     });
 
     if (!assignment) {
-      res.status(404).json({ error: 'Assignment not found' })
+      res.status(404).json({ error: "Assignment not found" })
 
       return;
     }
@@ -60,8 +60,8 @@ export const getAssignment = async (req: Request, res: Response): Promise<void> 
 
     res.json(enrichedAssignment);
   } catch (error) {
-    console.error('Get assignment error:', error);
-    res.status(500).json({ error: 'Failed to fetch assignment' });
+    console.error("Get assignment error:", error);
+    res.status(500).json({ error: "Failed to fetch assignment" });
   }
 };
 
@@ -80,4 +80,56 @@ export const getAssignmentsBySubject = async (
   });
 
   res.json(assignments);
+};
+
+export const updateAssignment = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+    const user = req.user!;
+
+    let updatePayload = updateData;
+
+    if (user.role === "teacher") {
+      const { subjectId, ...teacherUpdateData } = updateData;
+      updatePayload = teacherUpdateData;
+
+      if (subjectId) {
+        res.status(403).json({ error: "teachers cannot change subject" })
+
+        return;
+      }
+    }
+
+    const updatedAssignment = await prisma.assignment.update({
+      where: { id },
+      data: updatePayload
+    });
+
+    res.json(updatedAssignment);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteAssignment = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    await prisma.assignment.delete({
+      where: { id }
+    });
+
+    res.json({ message: "assignment deleted successfully" });
+  } catch (error) {
+    next(error);
+  }
 };

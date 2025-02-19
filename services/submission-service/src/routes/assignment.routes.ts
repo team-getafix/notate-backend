@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { authenticateJWT, requireRoles, requireTeacher } from '../middlewares/auth.middleware';
+import { authenticateJWT, requireAdmin, requireRoles, requireTeacher, requireTeacherAdmin } from '../middlewares/auth.middleware';
 import { assignmentAccess } from '../middlewares/access.middleware';
-import { createAssignment, getAssignment, getAssignmentsBySubject } from '../controllers/assignment.controller';
+import { createAssignment, deleteAssignment, getAssignment, getAssignmentsBySubject, updateAssignment } from '../controllers/assignment.controller';
 
 const router = Router();
 
@@ -72,7 +72,7 @@ const router = Router();
 router.post(
   '/',
   authenticateJWT,
-  requireTeacher,
+  requireTeacherAdmin,
   createAssignment
 );
 
@@ -121,7 +121,6 @@ router.post(
  *       500:
  *         description: Failed to fetch assignment
  */
-
 router.get(
   '/:id',
   authenticateJWT,
@@ -129,20 +128,20 @@ router.get(
   getAssignment
 );
 
-// router.patch(
-//   '/:id',
-//   authenticateJWT,
-//   requireTeacher,
-//   assignmentAccess,
-//   updateAssignment
-// );
+router.patch(
+  '/:id',
+  authenticateJWT,
+  requireTeacherAdmin,
+  assignmentAccess,
+  updateAssignment
+);
 
-// router.delete(
-//   '/:id',
-//   authenticateJWT,
-//   requireTeacher,
-//   assignmentAccess,
-//   deleteAssignment
-// );
+router.delete(
+  '/:id',
+  authenticateJWT,
+  requireTeacherAdmin,
+  assignmentAccess,
+  deleteAssignment
+);
 
 export default router;
