@@ -1,7 +1,7 @@
 import app from "./app";
 import prisma from "./utils/prisma";
 
-const PORT = process.env.PORT || 4001;
+const PORT = process.env.PORT || 4002;
 const server = app.listen(PORT, () => {
   console.log(`class service running on port ${PORT}`);
 });
