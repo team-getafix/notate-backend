@@ -39,7 +39,7 @@ const router = Router();
  *       400:
  *         description: Bad request, missing required fields
  */
-router.post("/subjects", createSubject);
+router.post("/", createSubject);
 
 /**
  * @swagger
@@ -51,7 +51,7 @@ router.post("/subjects", createSubject);
  *       200:
  *         description: A list of subjects
  */
-router.get("/subjects", getSubjects);
+router.get("/", getSubjects);
 
 /**
  * @swagger
@@ -72,7 +72,7 @@ router.get("/subjects", getSubjects);
  *       404:
  *         description: Subject not found
  */
-router.get("/subjects/:id", getSubjectById);
+router.get("/:id", getSubjectById);
 
 /**
  * @swagger
@@ -110,7 +110,7 @@ router.get("/subjects/:id", getSubjectById);
  *       404:
  *         description: Subject not found
  */
-router.put("/subjects/:id", updateSubject);
+router.put("/:id", updateSubject);
 
 /**
  * @swagger
@@ -144,6 +144,6 @@ router.put("/subjects/:id", updateSubject);
  *       500:
  *         description: Server error.
  */
-router.delete("/subjects/:id", deleteSubject);
+router.delete("/:id", deleteSubject);
 
 export default router;

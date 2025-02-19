@@ -7,7 +7,7 @@ const router = Router();
 
 /**
  * @swagger
- * /{id}/subjects:
+ * /student/{id}/subjects:
  *   get:
  *     summary: Retrieve subjects for a student
  *     tags: [Student]
