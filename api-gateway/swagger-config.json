@@ -1,0 +1,14 @@
+{
+  "swagger": "3.0",
+  "info": {
+    "title": "Notate API",
+    "version": "1.0.0",
+    "description": "Aggregated Swagger docs from all services"
+  },
+  "apis": [
+    {
+      "url": "http://auth-service:4001/docs-json",
+      "name": "auth-service"
+    }
+  ]
+}

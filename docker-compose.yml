@@ -33,12 +33,13 @@ services:
       - DATABASE_URL=postgresql://admin:compsci@postgres:5432/notatedb?schema=public
     env_file:
       - ./services/auth-service/.env
+    stop_signal: SIGTERM
 
   api-gateway:
     container_name: api-gateway
     build: ./api-gateway/
     ports:
-      - "3000:3000"
+      - "4000:4000"
     depends_on:
       - auth-service
 

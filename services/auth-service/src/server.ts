@@ -1,4 +1,5 @@
 import app from "./app";
+import prisma from "./utils/prisma";
 
 const PORT = process.env.PORT || 4001;
 const server = app.listen(PORT, () => {
@@ -7,6 +8,7 @@ const server = app.listen(PORT, () => {
 
 const shutdown = () => {
   console.log("auth service shutting down...");
+  prisma.$disconnect();
   server.close(() => process.exit(0));
 };
 

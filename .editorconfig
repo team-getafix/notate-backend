@@ -3,7 +3,7 @@
 # top-most EditorConfig file
 root = true
 
-[*.ts]
+[*.{ts,json}]
 indent_style = space
 indent_size = 2
 end_of_line = crlf

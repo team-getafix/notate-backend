@@ -28,4 +28,9 @@ const swaggerDocs = swaggerJsDoc(swaggerOptions);
 
 export const setupSwagger = (app: Express) => {
   app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+  app.get("/docs-json", (req, res): void => {
+    res.json(swaggerDocs);
+
+    return;
+  });
 };
