@@ -34,6 +34,7 @@ services:
     env_file:
       - ./services/auth-service/.env
     stop_signal: SIGTERM
+    stop_grace_period: 1s
 
   class-service:
     container_name: class-service
@@ -47,6 +48,7 @@ services:
     env_file:
       - ./services/class-service/.env
     stop_signal: SIGTERM
+    stop_grace_period: 1s
 
   api-gateway:
     container_name: api-gateway
@@ -56,6 +58,8 @@ services:
     depends_on:
       - auth-service
       - class-service
+    stop_signal: SIGTERM
+    stop_grace_period: 1s
 
 volumes:
   postgres_data:

@@ -1,11 +1,12 @@
-import { Router } from 'express';
+import { Router } from "express";
 import {
   createClass,
   getClasses,
   getClassById,
   updateClass,
   deleteClass,
-} from '../controllers/class.controller';
+  getClassSubjects,
+} from "../controllers/class.controller";
 
 const router = Router();
 
@@ -43,7 +44,7 @@ const router = Router();
  *       400:
  *         description: Bad request, missing required fields
  */
-router.post('/', createClass);
+router.post("/", createClass);
 
 /**
  * @swagger
@@ -55,7 +56,7 @@ router.post('/', createClass);
  *       200:
  *         description: A list of classes
  */
-router.get('/', getClasses);
+router.get("/", getClasses);
 
 /**
  * @swagger
@@ -76,7 +77,7 @@ router.get('/', getClasses);
  *       404:
  *         description: Class not found
  */
-router.get('/:id', getClassById);
+router.get("/:id", getClassById);
 
 /**
  * @swagger
@@ -119,7 +120,7 @@ router.get('/:id', getClassById);
  *       404:
  *         description: Class not found
  */
-router.put('/:id', updateClass);
+router.put("/:id", updateClass);
 
 /**
  * @swagger
@@ -140,6 +141,27 @@ router.put('/:id', updateClass);
  *       404:
  *         description: Class not found
  */
-router.delete('/:id', deleteClass);
+router.delete("/:id", deleteClass);
+
+/**
+ * @swagger
+ * /classes/{id}/subjects:
+ *   get:
+ *     summary: Get subjects of a specific class
+ *     tags: [Classes]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the class whose subjects are to be retrieved
+ *     responses:
+ *       200:
+ *         description: List of subjects for the class
+ *       404:
+ *         description: Class not found
+ */
+router.get("/:id/subjects", getClassSubjects);
 
 export default router;

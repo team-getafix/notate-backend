@@ -93,3 +93,23 @@ export const deleteClass = async (req: Request, res: Response, next: NextFunctio
     next(error);
   }
 };
+
+export const getClassSubjects = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const classData = await prisma.class.findUnique({
+      where: { id },
+      include: { subjects: true }
+    });
+
+    if (!classData) {
+      res.status(404).json({ error: "class not found" });
+
+      return;
+    }
+
+    res.json(classData.subjects);
+  } catch (error) {
+    next(error);
+  }
+};
