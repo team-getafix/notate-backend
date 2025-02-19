@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { registerUser, loginUser, getCurrentUser } from "../controllers/auth.controller";
-import { authenticateJWT } from "../middlewares/jwt.middleware";
+import { authenticateJWT, requireAdmin, requireRoles } from "../middlewares/jwt.middleware";
 
 const router = Router();
 
@@ -9,6 +9,7 @@ const router = Router();
  * /auth/register:
  *   post:
  *     summary: Register a new user
+ *     tags: [Authenticate]
  *     description: Creates a new user account (Admin only)
  *     security:
  *       - BearerAuth: []
@@ -23,6 +24,13 @@ const router = Router();
  *                 type: string
  *               password:
  *                 type: string
+ *               firstName:
+ *                 type: string
+ *               middleName:
+ *                 type: string
+ *                 required: false
+ *               lastName:
+ *                 type: string
  *               role:
  *                 type: string
  *     responses:
@@ -31,13 +39,14 @@ const router = Router();
  *       409:
  *         description: User already exists
  */
-router.post("/register", authenticateJWT(["admin"]), registerUser);
+router.post("/register", authenticateJWT, requireAdmin, registerUser);
 
 /**
  * @swagger
  * /auth/login:
  *   post:
  *     summary: User login
+ *     tags: [Authenticate]
  *     description: Authenticate user and return JWT
  *     requestBody:
  *       required: true
@@ -63,12 +72,30 @@ router.post("/login", loginUser);
  * /auth/me:
  *   get:
  *     summary: Get current user
+ *     tags: [Authenticate]
  *     security:
  *       - BearerAuth: []
  *     responses:
  *       200:
  *         description: Current user details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 role:
+ *                   type: string
+ *       401:
+ *         description: Unauthorized - Token missing or invalid
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
  */
-router.get("/me", authenticateJWT(["student", "teacher", "admin"]), getCurrentUser);
+router.get("/me", authenticateJWT, getCurrentUser);
 
 export default router;

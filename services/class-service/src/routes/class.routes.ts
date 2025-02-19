@@ -8,6 +8,16 @@ import {
   getClassSubjects,
 } from "../controllers/class.controller";
 
+import {
+  authenticateJWT,
+  requireAdmin,
+  requireRoles,
+  requireTeacherForSubject
+} from "../middlewares/auth.middleware";
+
+import { validationMiddleware } from "../middlewares/validation.middleware";
+import { CreateClassDto, DeleteClassByIdDto, GetClassByIdDto, UpdateClassDto } from "../dtos/class.dto";
+
 const router = Router();
 
 /**
@@ -44,7 +54,7 @@ const router = Router();
  *       400:
  *         description: Bad request, missing required fields
  */
-router.post("/", createClass);
+router.post("/", authenticateJWT, requireAdmin, validationMiddleware(CreateClassDto), createClass);
 
 /**
  * @swagger
@@ -56,7 +66,7 @@ router.post("/", createClass);
  *       200:
  *         description: A list of classes
  */
-router.get("/", getClasses);
+router.get("/", authenticateJWT, requireAdmin, getClasses);
 
 /**
  * @swagger
@@ -77,7 +87,7 @@ router.get("/", getClasses);
  *       404:
  *         description: Class not found
  */
-router.get("/:id", getClassById);
+router.get("/:id", authenticateJWT, requireRoles(["teacher", "admin"]), validationMiddleware(GetClassByIdDto), getClassById);
 
 /**
  * @swagger
@@ -120,7 +130,7 @@ router.get("/:id", getClassById);
  *       404:
  *         description: Class not found
  */
-router.put("/:id", updateClass);
+router.put("/:id", authenticateJWT, requireAdmin, validationMiddleware(UpdateClassDto), updateClass);
 
 /**
  * @swagger
@@ -141,7 +151,7 @@ router.put("/:id", updateClass);
  *       404:
  *         description: Class not found
  */
-router.delete("/:id", deleteClass);
+router.delete("/:id", authenticateJWT, requireAdmin, validationMiddleware(DeleteClassByIdDto), deleteClass);
 
 /**
  * @swagger
@@ -162,6 +172,6 @@ router.delete("/:id", deleteClass);
  *       404:
  *         description: Class not found
  */
-router.get("/:id/subjects", getClassSubjects);
+router.get("/:id/subjects", authenticateJWT, requireAdmin, validationMiddleware(GetClassByIdDto), getClassSubjects);
 
 export default router;

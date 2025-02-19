@@ -26,14 +26,15 @@ export const authenticateJWT = (req: AuthRequest, res: Response, next: NextFunct
   }
 };
 
-export const requireAdmin = (req: AuthRequest, res: Response, next: NextFunction): void => {
-  if (req.user?.role !== "admin") {
-    res.status(403).json({ error: "admins only" });
+export const requireRoles = (requiredRoles: string[]) => {
+  return (req: AuthRequest, res: Response, next: NextFunction): void => {
+    if (!req.user || !requiredRoles.includes(req.user.role)) {
+      res.status(403).json({ error: "access denied" });
+      return;
+    }
 
-    return;
-  }
-
-  next();
+    next();
+  };
 };
 
 export const requireTeacherForSubject = async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -64,3 +65,7 @@ export const requireTeacherForSubject = async (req: AuthRequest, res: Response, 
     next(error);
   }
 };
+
+export const requireAdmin = requireRoles(["admin"]);
+export const requireTeacher = requireRoles(["teacher"]);
+export const requireStudent = requireRoles(["student"]);

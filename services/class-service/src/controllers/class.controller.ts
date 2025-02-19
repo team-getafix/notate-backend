@@ -1,14 +1,10 @@
-import type { Request, Response, NextFunction } from "express";
+import type { Response, NextFunction } from "express";
 import prisma from "../utils/prisma";
+import { AuthRequest } from "../middlewares/auth.middleware";
 
-export const createClass = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const createClass = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { name, subjectIds, studentIds } = req.body;
-    if (!name) {
-      res.status(400).json({ error: "Name is required" });
-
-      return;
-    }
 
     const newClass = await prisma.class.create({
       data: {
@@ -27,7 +23,7 @@ export const createClass = async (req: Request, res: Response, next: NextFunctio
   }
 };
 
-export const getClasses = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getClasses = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const classes = await prisma.class.findMany({
       include: { subjects: true },
@@ -39,7 +35,7 @@ export const getClasses = async (req: Request, res: Response, next: NextFunction
   }
 };
 
-export const getClassById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getClassById = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
     const foundClass = await prisma.class.findUnique({
@@ -59,7 +55,7 @@ export const getClassById = async (req: Request, res: Response, next: NextFuncti
   }
 };
 
-export const updateClass = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const updateClass = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
     const { name, subjectIds, studentIds } = req.body;
@@ -81,7 +77,7 @@ export const updateClass = async (req: Request, res: Response, next: NextFunctio
   }
 };
 
-export const deleteClass = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const deleteClass = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
     const deletedClass = await prisma.class.delete({
@@ -94,7 +90,7 @@ export const deleteClass = async (req: Request, res: Response, next: NextFunctio
   }
 };
 
-export const getClassSubjects = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getClassSubjects = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
     const classData = await prisma.class.findUnique({

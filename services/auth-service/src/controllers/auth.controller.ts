@@ -2,41 +2,71 @@ import type { Request, Response, NextFunction } from "express";
 import bcrypt from "@node-rs/bcrypt";
 import jwt from "jsonwebtoken";
 import prisma from "../utils/prisma";
+import { AuthRequest } from "../middlewares/jwt.middleware";
+import { RegisterUserDto, LoginUserDto } from "../dtos/user.dto";
 
 const SECRET_KEY = process.env.JWT_SECRET || "development";
 
-export const registerUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const registerUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
-    const { email, password, role } = req.body;
-    if (!email || !password || !role) {
-      res.status(400).json({ error: "email, password and role are required" });
+    const { email, password, firstName, middleName, lastName, role } =
+      req.body as RegisterUserDto;
+
+    if (!email || !password || !firstName || !lastName || !role) {
+      res
+        .status(400)
+        .json({
+          error:
+            "email, password, firstName, lastName, and role are required",
+        });
 
       return;
     }
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      res.status(409).json({ error: "a user with this email already exists" });
+      res
+        .status(409)
+        .json({ error: "a user with this email already exists" });
 
       return;
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
-      data: { email, password: hashedPassword, role },
+      data: {
+        email,
+        password: hashedPassword,
+        firstName,
+        middleName: middleName || null,
+        lastName,
+        role,
+      },
     });
 
-    res.status(201).json({ message: "User created successfully", user });
+    res
+      .status(201)
+      .json({ message: "user created successfully", user });
   } catch (error) {
     next(error);
   }
 };
 
-export const loginUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const loginUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
-    const { email, password } = req.body;
+    const { email, password } = req.body as LoginUserDto;
     if (!email || !password) {
-      res.status(400).json({ error: "email and password are required" });
+      res
+        .status(400)
+        .json({ error: "email and password are required" });
 
       return;
     }
@@ -48,16 +78,40 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
       return;
     }
 
-    const token = jwt.sign({ id: user.id, role: user.role }, SECRET_KEY, { expiresIn: "1h" });
+    const token = jwt.sign(
+      { id: user.id, role: user.role },
+      SECRET_KEY,
+      { expiresIn: "1h" }
+    );
+
     res.json({ token });
   } catch (error) {
     next(error);
   }
 };
 
-export const getCurrentUser = async (req: any, res: Response, next: NextFunction): Promise<void> => {
+export const getCurrentUser = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
-    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    if (!req.user) {
+      res.status(401).json({ error: "no user information found" });
+
+      return;
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+    });
+
+    if (!user) {
+      res.status(404).json({ error: "user not found" });
+
+      return;
+    }
+
     res.json(user);
   } catch (error) {
     next(error);
