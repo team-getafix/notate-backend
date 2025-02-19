@@ -32,7 +32,17 @@ const classProxy = createProxyMiddleware({
   },
 });
 
+const submissionProxy = createProxyMiddleware({
+  target: 'http://submission-service:4003',
+  changeOrigin: true,
+  pathRewrite: (path: string) => `/${path}`,
+  on: {
+    proxyReq: bodyReconstructor
+  },
+});
+
 app.use("/api/auth", authProxy);
 app.use("/api/class", classProxy);
+app.use("/api/submission", submissionProxy);
 
 export default app;

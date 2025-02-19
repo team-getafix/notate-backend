@@ -1,0 +1,38 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Assignment {
+  id          String       @id @default(uuid())
+  title       String
+  description String?
+  dueDate     DateTime
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  subjectId   String // Reference to class-service subject
+  teacherId   String // Reference to auth-service user
+  submissions Submission[]
+
+  @@index([subjectId])
+  @@index([teacherId])
+}
+
+model Submission {
+  id           String     @id @default(uuid())
+  assignment   Assignment @relation(fields: [assignmentId], references: [id])
+  assignmentId String
+  studentId    String // Reference to auth-service user
+  filePath     String     @unique // Filesystem path
+  feedbackPath String? // Teacher feedback file path
+  grade        Float?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([studentId])
+  @@index([assignmentId])
+}
