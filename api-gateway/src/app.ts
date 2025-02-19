@@ -8,8 +8,6 @@ const bodyReconstructor = (proxyReq: any, req: any, res: any) => {
     proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
     proxyReq.write(bodyData);
   }
-
-  console.log(`body: ${req.body}`)
 };
 
 dotenv.config();
