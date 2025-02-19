@@ -1,11 +1,11 @@
-import type { Request, Response, NextFunction } from 'express';
-import prisma from '../utils/prisma';
+import type { Request, Response, NextFunction } from "express";
+import prisma from "../utils/prisma";
 
 export const createClass = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { name, subjectIds, studentIds } = req.body;
     if (!name) {
-      res.status(400).json({ error: 'Name is required' });
+      res.status(400).json({ error: "Name is required" });
 
       return;
     }
@@ -48,7 +48,7 @@ export const getClassById = async (req: Request, res: Response, next: NextFuncti
     });
 
     if (!foundClass) {
-      res.status(404).json({ error: 'Class not found' });
+      res.status(404).json({ error: "class not found" });
 
       return;
     }

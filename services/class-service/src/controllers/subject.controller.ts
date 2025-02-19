@@ -1,11 +1,11 @@
-import type { Request, Response, NextFunction } from 'express';
-import prisma from '../utils/prisma';
+import type { Request, Response, NextFunction } from "express";
+import prisma from "../utils/prisma";
 
 export const createSubject = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { name, teacherIds } = req.body;
     if (!name || !Array.isArray(teacherIds)) {
-      res.status(400).json({ error: 'Name and teacherIds (as an array) are required' });
+      res.status(400).json({ error: "name and teacherIds (as an array) are required" });
 
       return;
     }
@@ -44,7 +44,7 @@ export const getSubjectById = async (req: Request, res: Response, next: NextFunc
     });
 
     if (!subject) {
-      res.status(404).json({ error: 'Subject not found' });
+      res.status(404).json({ error: "subject not found" });
 
       return;
     }
