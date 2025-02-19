@@ -31,8 +31,6 @@ services:
       - postgres
     environment:
       - DATABASE_URL=postgresql://admin:compsci@postgres:5432/notatedb?schema=auth
-    env_file:
-      - ./services/auth-service/.env
     stop_signal: SIGTERM
     stop_grace_period: 1s
 
@@ -45,8 +43,18 @@ services:
       - postgres
     environment:
       - DATABASE_URL=postgresql://admin:compsci@postgres:5432/notatedb?schema=class
-    env_file:
-      - ./services/class-service/.env
+    stop_signal: SIGTERM
+    stop_grace_period: 1s
+
+  submission-service:
+    container_name: submission-service
+    build: ./services/submission-service
+    ports:
+      - "4003:4003"
+    depends_on:
+      - postgres
+    environment:
+      - DATABASE_URL=postgresql://admin:compsci@postgres:5432/notatedb?schema=class
     stop_signal: SIGTERM
     stop_grace_period: 1s
 
@@ -58,6 +66,7 @@ services:
     depends_on:
       - auth-service
       - class-service
+      - submission-service
     stop_signal: SIGTERM
     stop_grace_period: 1s
 
