@@ -30,9 +30,22 @@ services:
     depends_on:
       - postgres
     environment:
-      - DATABASE_URL=postgresql://admin:compsci@postgres:5432/notatedb?schema=public
+      - DATABASE_URL=postgresql://admin:compsci@postgres:5432/notatedb?schema=auth
     env_file:
       - ./services/auth-service/.env
+    stop_signal: SIGTERM
+
+  class-service:
+    container_name: class-service
+    build: ./services/class-service
+    ports:
+      - "4002:4002"
+    depends_on:
+      - postgres
+    environment:
+      - DATABASE_URL=postgresql://admin:compsci@postgres:5432/notatedb?schema=class
+    env_file:
+      - ./services/class-service/.env
     stop_signal: SIGTERM
 
   api-gateway:
