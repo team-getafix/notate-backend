@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(cors());
 
 app.use("/classes", classRoutes);
-app.use("/subject", subjectRoutes);
+app.use("/subjects", subjectRoutes);
 app.use("/student", studentRoutes)
 
 setupSwagger(app);

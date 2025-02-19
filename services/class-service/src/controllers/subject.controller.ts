@@ -59,6 +59,14 @@ export const updateSubject = async (req: Request, res: Response, next: NextFunct
   try {
     const { id } = req.params;
     const { name, teacherIds } = req.body;
+
+    const existingSubject = await prisma.subject.findUnique({ where: { id } });
+    if (!existingSubject) {
+      res.status(404).json({ error: "subject not found" });
+
+      return;
+    }
+
     const subject = await prisma.subject.update({
       where: { id },
       data: { name, teacherIds },
@@ -73,6 +81,14 @@ export const updateSubject = async (req: Request, res: Response, next: NextFunct
 export const deleteSubject = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
+
+    const existingSubject = await prisma.subject.findUnique({ where: { id } });
+    if (!existingSubject) {
+      res.status(404).json({ error: "subject not found" });
+
+      return;
+    }
+
     const subject = await prisma.subject.delete({
       where: { id },
     });
