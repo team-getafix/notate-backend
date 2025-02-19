@@ -16,7 +16,7 @@ import {
 } from "../middlewares/auth.middleware";
 
 import { validationMiddleware } from "../middlewares/validation.middleware";
-import { CreateClassDto, DeleteClassByIdDto, GetClassByIdDto, UpdateClassDto } from "../dtos/class.dto";
+import { CreateClassDto, UpdateClassDto } from "../dtos/class.dto";
 
 const router = Router();
 
@@ -87,12 +87,12 @@ router.get("/", authenticateJWT, requireAdmin, getClasses);
  *       404:
  *         description: Class not found
  */
-router.get("/:id", authenticateJWT, requireRoles(["teacher", "admin"]), validationMiddleware(GetClassByIdDto), getClassById);
+router.get("/:id", authenticateJWT, requireRoles(["teacher", "admin"]), getClassById);
 
 /**
  * @swagger
  * /classes/{id}:
- *   put:
+ *   patch:
  *     summary: Update a class by ID
  *     tags: [Classes]
  *     parameters:
@@ -151,7 +151,7 @@ router.patch("/:id", authenticateJWT, requireAdmin, validationMiddleware(UpdateC
  *       404:
  *         description: Class not found
  */
-router.delete("/:id", authenticateJWT, requireAdmin, validationMiddleware(DeleteClassByIdDto), deleteClass);
+router.delete("/:id", authenticateJWT, requireAdmin, deleteClass);
 
 /**
  * @swagger
@@ -172,6 +172,6 @@ router.delete("/:id", authenticateJWT, requireAdmin, validationMiddleware(Delete
  *       404:
  *         description: Class not found
  */
-router.get("/:id/subjects", authenticateJWT, requireAdmin, validationMiddleware(GetClassByIdDto), getClassSubjects);
+router.get("/:id/subjects", authenticateJWT, requireAdmin, getClassSubjects);
 
 export default router;

@@ -31,15 +31,3 @@ export class UpdateClassDto {
   @IsString({ each: true })
   studentIds?: string[];
 }
-
-export class GetClassByIdDto {
-  @IsString()
-  @IsNotEmpty()
-  classId: string;
-}
-
-export class DeleteClassByIdDto {
-  @IsString()
-  @IsNotEmpty()
-  classId: string;
-}
