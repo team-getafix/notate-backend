@@ -31,3 +31,9 @@ export class UpdateClassDto {
   @IsString({ each: true })
   studentIds?: string[];
 }
+
+export class AddSubjectToClassDto {
+  @IsString()
+  @IsNotEmpty()
+  subjectId!: string;
+}

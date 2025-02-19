@@ -8,6 +8,8 @@ import {
 } from "../controllers/subject.controller";
 
 import { authenticateJWT, requireAdmin, requireTeacherAdmin, requireTeacherForSubject } from "../middlewares/auth.middleware";
+import { validationMiddleware } from "../middlewares/validation.middleware";
+import { CreateSubjectDto, UpdateSubjectDto } from "../dtos/subject.dto";
 
 const router = Router();
 
@@ -43,7 +45,7 @@ const router = Router();
  *       400:
  *         description: Bad request, missing required fields
  */
-router.post("/", authenticateJWT, requireAdmin, createSubject);
+router.post("/", authenticateJWT, requireAdmin, validationMiddleware(CreateSubjectDto), createSubject);
 
 /**
  * @swagger
@@ -120,7 +122,7 @@ router.get("/:id", authenticateJWT, requireTeacherForSubject, getSubjectById);
  *       404:
  *         description: Subject not found
  */
-router.patch("/:id", authenticateJWT, requireTeacherForSubject, requireAdmin, updateSubject);
+router.patch("/:id", authenticateJWT, requireTeacherForSubject, requireAdmin, validationMiddleware(UpdateSubjectDto), updateSubject);
 
 /**
  * @swagger

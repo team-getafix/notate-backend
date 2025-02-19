@@ -45,6 +45,12 @@ export const requireTeacherForSubject = async (req: AuthRequest, res: Response, 
     return;
   }
 
+  if (req.user || req.user.role == "admin") {
+    next();
+
+    return;
+  }
+
   try {
     const { default: prisma } = await import("../utils/prisma");
     const subject = await prisma.subject.findUnique({ where: { id: subjectId } });

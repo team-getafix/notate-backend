@@ -6,6 +6,7 @@ import {
   updateClass,
   deleteClass,
   getClassSubjects,
+  addSubjectToClass,
 } from "../controllers/class.controller";
 
 import {
@@ -16,7 +17,7 @@ import {
 } from "../middlewares/auth.middleware";
 
 import { validationMiddleware } from "../middlewares/validation.middleware";
-import { CreateClassDto, UpdateClassDto } from "../dtos/class.dto";
+import { AddSubjectToClassDto, CreateClassDto, UpdateClassDto } from "../dtos/class.dto";
 
 const router = Router();
 
@@ -185,5 +186,40 @@ router.delete("/:id", authenticateJWT, requireAdmin, deleteClass);
  *         description: Class not found
  */
 router.get("/:id/subjects", authenticateJWT, requireAdmin, getClassSubjects);
+
+/**
+ * @swagger
+ * /classes/{id}/subjects:
+ *   put:
+ *     summary: Add a subject to a specific class
+ *     security:
+ *       - BearerAuth: []
+ *     tags: [Classes]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the class which the subject will be added to
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               subjectId:
+ *                 type: string
+ *                 description: The ID of the subject to add
+ *             required:
+ *               - subjectId
+ *     responses:
+ *       200:
+ *         description: Updated class model
+ *       404:
+ *         description: Class not found
+ */
+router.put("/:id/subjects", authenticateJWT, requireAdmin, validationMiddleware(AddSubjectToClassDto), addSubjectToClass);
 
 export default router;

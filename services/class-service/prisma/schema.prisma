@@ -12,7 +12,8 @@ model Subject {
   name       String
   teacherIds String[]
 
-  classes Class[]
+  classes            Class[]
+  subjectAssignments SubjectAssignment[]
 }
 
 model Class {
@@ -21,4 +22,16 @@ model Class {
   studentIds String[]
 
   subjects Subject[]
+}
+
+model SubjectAssignment {
+  id String @id @default(uuid())
+
+  subject   Subject @relation(fields: [subjectId], references: [id])
+  subjectId String
+
+  studentIds String[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

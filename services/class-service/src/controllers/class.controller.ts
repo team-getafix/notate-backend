@@ -125,3 +125,35 @@ export const getClassSubjects = async (req: AuthRequest, res: Response, next: Ne
     next(error);
   }
 };
+
+export const addSubjectToClass = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { classId } = req.params;
+    const { subjectId } = req.body;
+
+    const existingClass = await prisma.class.findUnique({ where: { id: classId } });
+    if (!existingClass) {
+      res.status(404).json({ error: "class not found" });
+
+      return;
+    }
+
+    const updatedClass = await prisma.class.update({
+      where: { id: classId },
+      data: {
+        subjects: {
+          connect: { id: subjectId },
+        },
+      },
+      include: { subjects: true },
+    });
+
+    res.status(200).json(updatedClass);
+  } catch (error) {
+    next(error);
+  }
+};
