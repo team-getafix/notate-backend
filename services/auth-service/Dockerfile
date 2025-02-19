@@ -9,4 +9,4 @@ EXPOSE 4001
 
 COPY . .
 
-CMD ["sh", "-c", "bun prisma migrate deploy && bun run src/index.ts"]
+CMD ["sh", "-c", "bun prisma migrate deploy && bun run src/server.ts"]
