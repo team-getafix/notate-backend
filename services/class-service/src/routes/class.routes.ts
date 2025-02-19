@@ -189,7 +189,7 @@ router.get("/:id/subjects", authenticateJWT, requireAdmin, getClassSubjects);
 
 /**
  * @swagger
- * /classes/{id}/subjects:
+ * /classes/{classId}/subjects:
  *   put:
  *     summary: Add a subject to a specific class
  *     security:
@@ -197,7 +197,7 @@ router.get("/:id/subjects", authenticateJWT, requireAdmin, getClassSubjects);
  *     tags: [Classes]
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: classId
  *         required: true
  *         schema:
  *           type: string
@@ -220,6 +220,6 @@ router.get("/:id/subjects", authenticateJWT, requireAdmin, getClassSubjects);
  *       404:
  *         description: Class not found
  */
-router.put("/:id/subjects", authenticateJWT, requireAdmin, validationMiddleware(AddSubjectToClassDto), addSubjectToClass);
+router.put("/:classId/subjects", authenticateJWT, requireAdmin, validationMiddleware(AddSubjectToClassDto), addSubjectToClass);
 
 export default router;
