@@ -128,27 +128,33 @@ export const fileOwnerAccess = async (
     });
 
     if (!submission) {
-      return res.status(404).json({ error: "File not found" });
+      res.status(404).json({ error: "File not found" });
+
+      return;
     }
 
-    // Student access
     if (user.role === "student") {
       if (submission.studentId !== user.id) {
-        return res.status(403).json({ error: "Not your file" });
+        res.status(403).json({ error: "Not your file" })
+
+        return;
       }
-      return next();
+
+      next();
     }
 
-    // Teacher access
     if (user.role === "teacher") {
       if (submission.assignment.teacherId !== user.id) {
-        return res.status(403).json({ error: "Not your student\'s file" });
+        res.status(403).json({ error: "Not your student\'s file" })
+
+        return;
       }
 
-      // Verify current subject assignment
       const subject = await getSubject(submission.assignment.subjectId, req.headers.authorization!);
       if (!subject?.teacherIds.includes(user.id)) {
-        return res.status(403).json({ error: "No longer assigned to this subject" });
+        res.status(403).json({ error: "No longer assigned to this subject" });
+
+        return;
       }
     }
 

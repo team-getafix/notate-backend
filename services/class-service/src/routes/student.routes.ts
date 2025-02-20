@@ -1,9 +1,10 @@
 import { Router } from "express";
 import {
+  getMyClasses,
   getStudentSubjects
 } from "../controllers/student.controller";
 
-import { requireTeacherAdmin } from "../middlewares/auth.middleware";
+import { authenticateJWT, requireStudent, requireTeacherAdmin } from "../middlewares/auth.middleware";
 
 const router = Router();
 
@@ -42,5 +43,12 @@ const router = Router();
  *         description: Server error.
  */
 router.get("/:id/subjects", requireTeacherAdmin, getStudentSubjects);
+
+router.get(
+  "/my-classes",
+  authenticateJWT,
+  requireStudent,
+  getMyClasses
+);
 
 export default router;

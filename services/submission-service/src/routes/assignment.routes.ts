@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authenticateJWT, requireAdmin, requireRoles, requireTeacher, requireTeacherAdmin } from '../middlewares/auth.middleware';
 import { assignmentAccess } from '../middlewares/access.middleware';
-import { createAssignment, deleteAssignment, getAssignment, getAssignmentsBySubject, updateAssignment } from '../controllers/assignment.controller';
+import { createAssignment, deleteAssignment, getAssignment, getAssignmentsBySubject, getMyAssignments, updateAssignment } from '../controllers/assignment.controller';
 import { validationMiddleware } from '../middlewares/validation.middleware';
 import { CreateAssignmentDto, UpdateAssignmentDto } from '../dtos/assignment.dto';
 
@@ -77,6 +77,13 @@ router.post(
   requireTeacherAdmin,
   validationMiddleware(CreateAssignmentDto),
   createAssignment
+);
+
+router.get(
+  "/my-assignments",
+  authenticateJWT,
+  requireTeacherAdmin,
+  getMyAssignments
 );
 
 /**

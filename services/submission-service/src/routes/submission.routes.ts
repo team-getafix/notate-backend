@@ -2,10 +2,11 @@ import { Router } from "express";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import { authenticateJWT, requireTeacherAdmin, requireStudent } from "../middlewares/auth.middleware";
-import { createSubmission, gradeSubmission, getSubmission } from "../controllers/submission.controller";
+import { authenticateJWT, requireTeacherAdmin, requireStudent, requireAdmin } from "../middlewares/auth.middleware";
+import { createSubmission, gradeSubmission, getSubmission, getMySubmissions, getAssignmentSubmissions, downloadFile, getAllSubmissions } from "../controllers/submission.controller";
 import { validationMiddleware } from "../middlewares/validation.middleware";
 import { GradeSubmissionDto } from "../dtos/submission.dto";
+import { fileOwnerAccess } from "../middlewares/access.middleware";
 
 // Ensure the upload directory exists
 const uploadDir = path.join(__dirname, "../../uploads");
@@ -27,6 +28,46 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 const router = Router();
+
+router.get(
+  "/",
+  authenticateJWT,
+  requireAdmin,
+  getAllSubmissions
+);
+
+/**
+ * @swagger
+ * /submissions/me:
+ *   get:
+ *     summary: Get current student's submissions
+ *     tags: [Submissions]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of student's submissions
+ */
+router.get(
+  "/me",
+  authenticateJWT,
+  requireStudent,
+  getMySubmissions
+);
+
+router.get(
+  "/for-assignment/:assignmentId",
+  authenticateJWT,
+  requireTeacherAdmin,
+  getAssignmentSubmissions
+);
+
+router.get(
+  "/files/*",
+  authenticateJWT,
+  fileOwnerAccess,
+  downloadFile
+);
 
 /**
  * @swagger

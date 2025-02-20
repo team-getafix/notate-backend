@@ -1,7 +1,8 @@
-import type { Request, Response, NextFunction } from "express";
+import type { Response, NextFunction } from "express";
 import prisma from "../utils/prisma";
+import { type AuthRequest } from "../middlewares/auth.middleware";
 
-export const getStudentSubjects = async (req: Request, res: Response, next: NextFunction) => {
+export const getStudentSubjects = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const classes = await prisma.class.findMany({
@@ -21,3 +22,24 @@ export const getStudentSubjects = async (req: Request, res: Response, next: Next
     next(error);
   }
 }
+
+export const getMyClasses = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const classes = await prisma.class.findMany({
+      where: { studentIds: { has: req.user!.id } },
+      select: {
+        id: true,
+        name: true,
+        subjects: { select: { id: true, name: true } }
+      }
+    });
+
+    res.json(classes);
+  } catch (error) {
+    next(error);
+  }
+};

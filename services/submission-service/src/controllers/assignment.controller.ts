@@ -133,3 +133,27 @@ export const deleteAssignment = async (
     next(error);
   }
 };
+
+export const getMyAssignments = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const assignments = await prisma.assignment.findMany({
+      where: { teacherId: req.user!.id },
+      include: { submissions: { select: { id: true } } },
+      orderBy: { dueDate: "asc" }
+    });
+
+    res.json(assignments.map(a => ({
+      id: a.id,
+      title: a.title,
+      dueDate: a.dueDate,
+      submissionsCount: a.submissions.length,
+      ungradedCount: a.submissions.filter(s => !s.grade).length
+    })));
+  } catch (error) {
+    next(error);
+  }
+};
