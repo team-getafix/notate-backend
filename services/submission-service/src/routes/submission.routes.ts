@@ -29,6 +29,24 @@ const upload = multer({ storage });
 
 const router = Router();
 
+/**
+ * @swagger
+ * /submissions:
+ *   get:
+ *     summary: Retrieve all submissions (admin access)
+ *     tags: [Submissions]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of all submissions with details.
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       500:
+ *         description: Internal server error
+ */
 router.get(
   "/",
   authenticateJWT,
@@ -55,6 +73,32 @@ router.get(
   getMySubmissions
 );
 
+/**
+ * @swagger
+ * /submissions/for-assignment/{assignmentId}:
+ *   get:
+ *     summary: Retrieve submissions for a specific assignment
+ *     description: Retrieves all submissions for the assignment identified by the given assignmentId. Accessible by teachers and admins.
+ *     tags: [Submissions]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: assignmentId
+ *         required: true
+ *         description: The ID of the assignment for which submissions are being fetched.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: A list of submissions for the specified assignment.
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Assignment not found or no submissions available.
+ */
 router.get(
   "/for-assignment/:assignmentId",
   authenticateJWT,
@@ -62,6 +106,31 @@ router.get(
   getAssignmentSubmissions
 );
 
+/**
+ * @swagger
+ * /submissions/files/{filepath}:
+ *   get:
+ *     summary: Download a file from a submission
+ *     tags: [Submissions]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: filepath
+ *         required: true
+ *         description: The relative path to the file.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: The requested file.
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden – file access denied
+ *       404:
+ *         description: File not found
+ */
 router.get(
   "/files/*",
   authenticateJWT,

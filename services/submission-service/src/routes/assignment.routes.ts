@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticateJWT, requireAdmin, requireRoles, requireTeacher, requireTeacherAdmin } from '../middlewares/auth.middleware';
+import { authenticateJWT, requireTeacherAdmin } from '../middlewares/auth.middleware';
 import { assignmentAccess } from '../middlewares/access.middleware';
 import { createAssignment, deleteAssignment, getAssignment, getAssignmentsBySubject, getMyAssignments, updateAssignment } from '../controllers/assignment.controller';
 import { validationMiddleware } from '../middlewares/validation.middleware';
@@ -79,6 +79,25 @@ router.post(
   createAssignment
 );
 
+/**
+ * @swagger
+ * /assignments/my-assignments:
+ *   get:
+ *     summary: Retrieve assignments for the authenticated teacher
+ *     description: Retrieves all assignments created by the authenticated teacher, including the count of total and ungraded submissions.
+ *     tags: [Assignments]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of assignments for the teacher.
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       500:
+ *         description: Internal server error
+ */
 router.get(
   "/my-assignments",
   authenticateJWT,
