@@ -6,9 +6,9 @@ const swaggerOptions = {
     definition: {
         openapi: "3.0.0",
         info: {
-            title: "Notate Submission API",
+            title: "Notate Homework Management API",
             version: "1.0.0",
-            description: "Notate's public homework submission API",
+            description: "Notate's public homework/assignment management API",
         },
         servers: [{ url: "http://localhost:4003" }],
         components: {

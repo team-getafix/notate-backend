@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { authenticateJWT, requireAdmin, requireRoles, requireTeacher, requireTeacherAdmin } from '../middlewares/auth.middleware';
 import { assignmentAccess } from '../middlewares/access.middleware';
 import { createAssignment, deleteAssignment, getAssignment, getAssignmentsBySubject, updateAssignment } from '../controllers/assignment.controller';
+import { validationMiddleware } from '../middlewares/validation.middleware';
+import { CreateAssignmentDto, UpdateAssignmentDto } from '../dtos/assignment.dto';
 
 const router = Router();
 
@@ -73,6 +75,7 @@ router.post(
   '/',
   authenticateJWT,
   requireTeacherAdmin,
+  validationMiddleware(CreateAssignmentDto),
   createAssignment
 );
 
@@ -128,14 +131,87 @@ router.get(
   getAssignment
 );
 
+/**
+ * @swagger
+ * /assignments/{id}:
+ *   patch:
+ *     summary: Update an assignment
+ *     description: Updates an assignment's details. Teachers are not allowed to change the subject.
+ *     tags:
+ *       - Assignments
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The assignment ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 description: The new title of the assignment
+ *               description:
+ *                 type: string
+ *                 description: The updated description of the assignment
+ *               subjectId:
+ *                 type: string
+ *                 description: The subject ID (only for admins, teachers cannot update this)
+ *     responses:
+ *       200:
+ *         description: Successfully updated assignment
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *       403:
+ *         description: Teachers cannot change the subject
+ *       404:
+ *         description: Assignment not found
+ *       500:
+ *         description: Internal server error
+ */
 router.patch(
   '/:id',
   authenticateJWT,
   requireTeacherAdmin,
   assignmentAccess,
+  validationMiddleware(UpdateAssignmentDto),
   updateAssignment
 );
 
+/**
+ * @swagger
+ * /assignments/{id}:
+ *   delete:
+ *     summary: Delete an assignment
+ *     description: Deletes an assignment by ID.
+ *     tags:
+ *       - Assignments
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The assignment ID
+ *     responses:
+ *       200:
+ *         description: Assignment deleted successfully
+ *       404:
+ *         description: Assignment not found
+ *       500:
+ *         description: Internal server error
+ */
 router.delete(
   '/:id',
   authenticateJWT,
