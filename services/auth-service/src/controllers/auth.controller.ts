@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { AuthRequest } from "../middlewares/jwt.middleware";
-import { RegisterUserDto, LoginUserDto } from "../dtos/user.dto";
+import { RegisterUserDto, LoginUserDto, ChangePasswordDto } from "../dtos/user.dto";
 import { generateTempPassword, sendWelcomeEmail } from "../utils/email";
 import bcrypt from "@node-rs/bcrypt";
 import jwt from "jsonwebtoken";
@@ -107,6 +107,48 @@ export const getCurrentUser = async (
     }
 
     res.json(user);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const changePassword = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { oldPassword, newPassword, confirmNewPassword } = req.body as ChangePasswordDto;
+    const user = req.user!;
+
+    if (newPassword !== confirmNewPassword) {
+      res.status(400).json({ error: "new passwords do not match" });
+      return;
+    }
+
+    const existingUser = await prisma.user.findUnique({
+      where: { id: user.id }
+    });
+
+    if (!existingUser) {
+      res.status(404).json({ error: "user not found" });
+      return;
+    }
+
+    const isValid = await bcrypt.compare(oldPassword, existingUser.password);
+    if (!isValid) {
+      res.status(401).json({ error: "invalid current password" });
+      return;
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { password: hashedNewPassword }
+    });
+
+    res.json({ message: "password changed successfully" });
   } catch (error) {
     next(error);
   }

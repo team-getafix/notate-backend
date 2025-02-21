@@ -1,6 +1,8 @@
 import { Router } from "express";
-import { registerUser, loginUser, getCurrentUser } from "../controllers/auth.controller";
+import { registerUser, loginUser, getCurrentUser, changePassword } from "../controllers/auth.controller";
 import { authenticateJWT, requireAdmin, requireRoles } from "../middlewares/jwt.middleware";
+import { validationMiddleware } from "../middlewares/validation.middleware";
+import { ChangePasswordDto } from "../dtos/user.dto";
 
 const router = Router();
 
@@ -95,5 +97,45 @@ router.post("/login", loginUser);
  *         description: Server error
  */
 router.get("/me", authenticateJWT, getCurrentUser);
+
+/**
+ * @swagger
+ * /auth/change-password:
+ *   post:
+ *     summary: Change user password
+ *     tags: [Authenticate]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - oldPassword
+ *               - newPassword
+ *               - confirmNewPassword
+ *             properties:
+ *               oldPassword:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *               confirmNewPassword:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Password changed successfully
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Invalid current password
+ */
+router.post(
+  "/change-password",
+  authenticateJWT,
+  validationMiddleware(ChangePasswordDto),
+  changePassword
+);
 
 export default router;
