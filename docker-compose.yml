@@ -10,6 +10,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin -d notatedb" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   pgadmin:
     image: dpage/pgadmin4
@@ -28,13 +33,20 @@ services:
     ports:
       - "4001:4001"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     environment:
       - DATABASE_URL=postgresql://admin:compsci@postgres:5432/notatedb?schema=auth
+      - POSTGRES_PASSWORD=compsci
       - GMAIL_USER=notate.demo@gmail.com
       - GMAIL_PASSWORD=hkjwhfykhmkomvda
     stop_signal: SIGTERM
     stop_grace_period: 1s
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:4001/health" ]
+      interval: 5s
+      timeout: 10s
+      retries: 3
 
   class-service:
     container_name: class-service
@@ -42,11 +54,18 @@ services:
     ports:
       - "4002:4002"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     environment:
       - DATABASE_URL=postgresql://admin:compsci@postgres:5432/notatedb?schema=class
+      - POSTGRES_PASSWORD=compsci
     stop_signal: SIGTERM
     stop_grace_period: 1s
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:4002/health" ]
+      interval: 5s
+      timeout: 10s
+      retries: 3
 
   submission-service:
     container_name: submission-service
@@ -54,11 +73,18 @@ services:
     ports:
       - "4003:4003"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     environment:
       - DATABASE_URL=postgresql://admin:compsci@postgres:5432/notatedb?schema=class
+      - POSTGRES_PASSWORD=compsci
     stop_signal: SIGTERM
     stop_grace_period: 1s
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:4003/health" ]
+      interval: 5s
+      timeout: 10s
+      retries: 3
 
   api-gateway:
     container_name: api-gateway
@@ -66,9 +92,12 @@ services:
     ports:
       - "4000:4000"
     depends_on:
-      - auth-service
-      - class-service
-      - submission-service
+      auth-service:
+        condition: service_healthy
+      class-service:
+        condition: service_healthy
+      submission-service:
+        condition: service_healthy
     stop_signal: SIGTERM
     stop_grace_period: 1s
 
