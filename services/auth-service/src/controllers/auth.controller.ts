@@ -1,9 +1,10 @@
 import type { Request, Response, NextFunction } from "express";
+import { AuthRequest } from "../middlewares/jwt.middleware";
+import { RegisterUserDto, LoginUserDto } from "../dtos/user.dto";
+import { generateTempPassword, sendWelcomeEmail } from "../utils/email";
 import bcrypt from "@node-rs/bcrypt";
 import jwt from "jsonwebtoken";
 import prisma from "../utils/prisma";
-import { AuthRequest } from "../middlewares/jwt.middleware";
-import { RegisterUserDto, LoginUserDto } from "../dtos/user.dto";
 
 const SECRET_KEY = process.env.JWT_SECRET || "development";
 
@@ -13,19 +14,11 @@ export const registerUser = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { email, password, firstName, middleName, lastName, role } =
+    const { email, firstName, middleName, lastName, role } =
       req.body as RegisterUserDto;
 
-    if (!email || !password || !firstName || !lastName || !role) {
-      res
-        .status(400)
-        .json({
-          error:
-            "email, password, firstName, lastName, and role are required",
-        });
-
-      return;
-    }
+    const tempPassword = generateTempPassword();
+    const hashedPassword = await bcrypt.hash(tempPassword);
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
@@ -36,7 +29,6 @@ export const registerUser = async (
       return;
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
       data: {
         email,
@@ -47,6 +39,8 @@ export const registerUser = async (
         role,
       },
     });
+
+    await sendWelcomeEmail(email, tempPassword);
 
     res
       .status(201)

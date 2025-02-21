@@ -31,6 +31,8 @@ services:
       - postgres
     environment:
       - DATABASE_URL=postgresql://admin:compsci@postgres:5432/notatedb?schema=auth
+      - GMAIL_USER=notate.demo@gmail.com
+      - GMAIL_PASSWORD=hkjwhfykhmkomvda
     stop_signal: SIGTERM
     stop_grace_period: 1s
 
