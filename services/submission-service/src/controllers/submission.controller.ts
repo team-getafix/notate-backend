@@ -71,6 +71,28 @@ export const getSubmission = async (req: Request, res: Response, next: NextFunct
   }
 };
 
+export const downloadFile = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    console.log(req.params[0]);
+    const filePath = path.join(process.env.STORAGE_ROOT!, req.params[0]);
+    console.log(filePath);
+
+    if (!fs.existsSync(filePath)) {
+      res.status(404).json({ error: "file not found" });
+
+      return;
+    }
+
+    res.sendFile(filePath);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getMySubmissions = async (
   req: AuthRequest,
   res: Response,
@@ -89,7 +111,8 @@ export const getMySubmissions = async (
       dueDate: sub.assignment.dueDate,
       submittedAt: sub.createdAt,
       grade: sub.grade,
-      status: sub.grade ? "graded" : "pending"
+      status: sub.grade ? "graded" : "pending",
+      downloadUrl: `/api/submissions/${sub.id}/file` // ADD HERE
     }));
 
     res.json(enriched);
@@ -122,28 +145,9 @@ export const getAssignmentSubmissions = async (
       grade: sub.grade,
       assignmentTitle: sub.assignment.title,
       dueDate: sub.assignment.dueDate,
-      status: sub.grade ? "graded" : "pending"
+      status: sub.grade ? "graded" : "pending",
+      downloadUrl: `/api/submissions/${sub.id}/file` // ADD HERE
     })));
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const downloadFile = async (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const filePath = path.join(process.env.STORAGE_ROOT!, req.params[0]);
-
-    if (!fs.existsSync(filePath)) {
-      res.status(404).json({ error: "File not found" });
-
-      return;
-    }
-
-    res.sendFile(filePath);
   } catch (error) {
     next(error);
   }
@@ -178,7 +182,8 @@ export const getAllSubmissions = async (
       subjectId: sub.assignment.subjectId,
       submittedAt: sub.createdAt,
       grade: sub.grade,
-      status: sub.grade ? "graded" : "pending"
+      status: sub.grade ? "graded" : "pending",
+      downloadUrl: `/api/submissions/${sub.id}/file`
     })));
   } catch (error) {
     next(error);

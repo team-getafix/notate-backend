@@ -1,20 +1,19 @@
-import { Router } from "express";
-import multer from "multer";
-import path from "path";
-import fs from "fs";
-import { authenticateJWT, requireTeacherAdmin, requireStudent, requireAdmin } from "../middlewares/auth.middleware";
+import { Router, Response } from "express";
+import { authenticateJWT, requireTeacherAdmin, requireStudent, requireAdmin, AuthRequest } from "../middlewares/auth.middleware";
 import { createSubmission, gradeSubmission, getSubmission, getMySubmissions, getAssignmentSubmissions, downloadFile, getAllSubmissions } from "../controllers/submission.controller";
 import { validationMiddleware } from "../middlewares/validation.middleware";
 import { GradeSubmissionDto } from "../dtos/submission.dto";
-import { fileOwnerAccess } from "../middlewares/access.middleware";
+import { submissionAccess } from "../middlewares/access.middleware";
+import prisma from "../utils/prisma";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
 
-// Ensure the upload directory exists
 const uploadDir = path.join(__dirname, "../../uploads");
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// Configure multer storage for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, uploadDir);
@@ -108,34 +107,76 @@ router.get(
 
 /**
  * @swagger
- * /submissions/files/{filepath}:
+ * /submissions/{submissionId}/file:
  *   get:
- *     summary: Download a file from a submission
+ *     summary: Download submission file
+ *     description: |
+ *       Secure file download endpoint with permissions:
+ *       - Students can download their own submissions
+ *       - Teachers can download submissions for their assignments
+ *       - Admins have full access
  *     tags: [Submissions]
  *     security:
  *       - BearerAuth: []
  *     parameters:
  *       - in: path
- *         name: filepath
+ *         name: submissionId
  *         required: true
- *         description: The relative path to the file.
  *         schema:
  *           type: string
+ *           example: "sub_12345"
+ *         description: ID of the submission to download
  *     responses:
  *       200:
- *         description: The requested file.
+ *         description: File content
+ *         content:
+ *           application/octet-stream:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *         headers:
+ *           Content-Disposition:
+ *             schema:
+ *               type: string
+ *             description: Filename for download
+ *             example: 'attachment; filename="math-homework.pdf"'
  *       401:
- *         description: Unauthorized
+ *         description: Unauthorized - Missing or invalid token
  *       403:
- *         description: Forbidden – file access denied
+ *         description: Forbidden - User doesn't have access
  *       404:
- *         description: File not found
+ *         description: Submission or file not found
+ *       500:
+ *         description: Internal server error
  */
-router.get(
-  "/files/*",
+router.get('/:submissionId/file',
   authenticateJWT,
-  fileOwnerAccess,
-  downloadFile
+  submissionAccess,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const submission = await prisma.submission.findUnique({
+        where: { id: req.params.submissionId }
+      });
+
+      if (!submission) {
+        return res.status(404).json({ error: "Submission not found" });
+      }
+
+      if (!fs.existsSync(submission.filePath)) {
+        return res.status(404).json({ error: "File not found" });
+      }
+
+      const filename = path.basename(submission.filePath);
+
+      res.setHeader('Content-Type', 'application/octet-stream');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+      const fileStream = fs.createReadStream(submission.filePath);
+      fileStream.pipe(res);
+    } catch (error) {
+      res.status(500).json({ error: "Download failed" });
+    }
+  }
 );
 
 /**

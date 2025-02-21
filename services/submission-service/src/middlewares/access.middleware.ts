@@ -59,7 +59,6 @@ export const submissionAccess = async (
     const submissionId = req.params.submissionId || req.params.id;
     const user = req.user!;
 
-    // Admin bypass
     if (user.role === "admin") return next();
 
     const submission = await prisma.submission.findUnique({
@@ -71,17 +70,15 @@ export const submissionAccess = async (
       return res.status(404).json({ error: "Submission not found" });
     }
 
-    // Student access
     if (user.role === "student") {
       if (submission.studentId !== user.id) {
         return res.status(403).json({ error: "Not your submission" });
       }
+
       return next();
     }
 
-    // Teacher access
     if (user.role === "teacher") {
-      // Verify assignment ownership
       const assignment = await prisma.assignment.findUnique({
         where: { id: submission.assignmentId },
         select: { teacherId: true }
@@ -91,7 +88,6 @@ export const submissionAccess = async (
         return res.status(403).json({ error: "Not your student\'s submission" });
       }
 
-      // Verify current subject assignment
       const subject = await getSubject(submission.assignment.subjectId, req.headers.authorization!);
       if (!subject?.teacherIds.includes(user.id)) {
         return res.status(403).json({ error: "No longer assigned to this subject" });
@@ -105,16 +101,15 @@ export const submissionAccess = async (
   }
 };
 
-export const fileOwnerAccess = async (
+export const fileAccessValidator = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const filePath = req.params[0];
+    const filePath = decodeURIComponent(req.params[0]);
     const user = req.user!;
 
-    // Admin bypass
     if (user.role === "admin") return next();
 
     const submission = await prisma.submission.findFirst({
@@ -128,33 +123,30 @@ export const fileOwnerAccess = async (
     });
 
     if (!submission) {
-      res.status(404).json({ error: "File not found" });
-
-      return;
+      return res.status(404).json({ error: "File not found" });
     }
 
     if (user.role === "student") {
       if (submission.studentId !== user.id) {
-        res.status(403).json({ error: "Not your file" })
-
-        return;
+        return res.status(403).json({ error: "Access denied" });
       }
 
-      next();
+      return next();
     }
 
     if (user.role === "teacher") {
-      if (submission.assignment.teacherId !== user.id) {
-        res.status(403).json({ error: "Not your student\'s file" })
+      const assignment = await prisma.assignment.findUnique({
+        where: { id: submission.assignmentId },
+        select: { teacherId: true }
+      });
 
-        return;
+      if (!assignment || assignment.teacherId !== user.id) {
+        return res.status(403).json({ error: "Access denied" });
       }
 
       const subject = await getSubject(submission.assignment.subjectId, req.headers.authorization!);
       if (!subject?.teacherIds.includes(user.id)) {
-        res.status(403).json({ error: "No longer assigned to this subject" });
-
-        return;
+        return res.status(403).json({ error: "No longer assigned to this subject" });
       }
     }
 

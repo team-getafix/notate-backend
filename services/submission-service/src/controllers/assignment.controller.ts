@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { classServiceClient, getSubject, validateSubjectExists } from "../utils/service-client";
-import { EnrichedAssignment } from "../types";
+import { EnrichedAssignment, EnrichedSubmission, Submission } from "../types";
 import { AuthRequest } from "../middlewares/auth.middleware";
 import prisma from "../utils/prisma";
 
@@ -158,7 +158,7 @@ export const getMyAssignments = async (
       title: a.title,
       dueDate: a.dueDate,
       submissionsCount: a.submissions.length,
-      ungradedCount: a.submissions.filter(s => !s.grade).length
+      ungradedCount: a.submissions.filter(s => !(s as Submission).grade).length
     })));
   } catch (error) {
     next(error);
