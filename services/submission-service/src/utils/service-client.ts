@@ -28,6 +28,19 @@ export const getSubject = async (subjectId: string, authHeader: string): Promise
   }
 };
 
+export const validateSubjectExists = async (subjectId: string, authHeader: string) => {
+  try {
+    const { status } = await classServiceClient.head(`/subjects/${subjectId}`, {
+      headers: { Authorization: authHeader }
+    });
+
+    return status === 200;
+  } catch (error) {
+    return false;
+  }
+};
+
+
 export const verifyStudentEnrollment = async (studentId: string, subjectId: string, authHeader: string): Promise<boolean> => {
   try {
     const { data } = await classServiceClient.get(`/classes/enrollment/${studentId}/${subjectId}`, {

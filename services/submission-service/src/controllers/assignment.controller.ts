@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import { classServiceClient, getSubject } from "../utils/service-client";
+import { classServiceClient, getSubject, validateSubjectExists } from "../utils/service-client";
 import { EnrichedAssignment } from "../types";
 import { AuthRequest } from "../middlewares/auth.middleware";
 import prisma from "../utils/prisma";
@@ -9,10 +9,17 @@ export const createAssignment = async (req: AuthRequest, res: Response): Promise
     const { title, description, dueDate, subjectId } = req.body;
     const teacherId = req.user!.id;
 
+    const subjectExists = await validateSubjectExists(subjectId, req.headers.authorization!);
+    if (!subjectExists) {
+      res.status(400).json({ error: "invalid subject ID" });
+
+      return;
+    }
+
     const subject = await getSubject(subjectId, req.headers.authorization!);
 
     if (!subject || !subject.teacherIds.includes(teacherId)) {
-      res.status(403).json({ error: "Not authorized for this subject" })
+      res.status(403).json({ error: "not authorized for this subject" })
 
       return;
     }
@@ -157,3 +164,21 @@ export const getMyAssignments = async (
     next(error);
   }
 };
+
+// idk where else to put this so lets just hide it here
+setInterval(async () => {
+  try {
+    const assignments = await prisma.assignment.findMany({
+      where: {
+        submissions: { none: {} },
+        createdAt: { lt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } // 7 days old
+      }
+    });
+
+    await prisma.assignment.deleteMany({
+      where: { id: { in: assignments.map(a => a.id) } }
+    });
+  } catch (error) {
+    console.error("orphan cleanup failed:", error);
+  }
+}, 1 * 60 * 60 * 1000); // hourly cleanup
