@@ -222,4 +222,39 @@ router.get("/:id/subjects", authenticateJWT, requireAdmin, getClassSubjects);
  */
 router.put("/:classId/subjects", authenticateJWT, requireAdmin, validationMiddleware(AddSubjectToClassDto), addSubjectToClass);
 
+/**
+ * @swagger
+ * /classes/{classId}/students:
+ *   put:
+ *     summary: Add a student to a specific class
+ *     security:
+ *       - BearerAuth: []
+ *     tags: [Classes]
+ *     parameters:
+ *       - in: path
+ *         name: classId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the class which the subject will be added to
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               studentId:
+ *                 type: string
+ *                 description: The ID of the student to add
+ *             required:
+ *               - studentId
+ *     responses:
+ *       200:
+ *         description: Updated class model
+ *       404:
+ *         description: Class not found
+ */
+router.put("/:classId/students", authenticateJWT, requireAdmin, validationMiddleware(AddSubjectToClassDto), addSubjectToClass);
+
 export default router;
