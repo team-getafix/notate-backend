@@ -1,10 +1,11 @@
 import { Router } from "express";
 import {
   getMyClasses,
-  getStudentSubjects
+  getStudentSubjects,
+  getUnassignedStudents
 } from "../controllers/student.controller";
 
-import { authenticateJWT, requireStudent, requireTeacherAdmin } from "../middlewares/auth.middleware";
+import { authenticateJWT, requireAdmin, requireStudent, requireTeacherAdmin } from "../middlewares/auth.middleware";
 
 const router = Router();
 
@@ -66,5 +67,23 @@ router.get(
   requireStudent,
   getMyClasses
 );
+
+/**
+ * @swagger
+ * /student/unassigned:
+ *   get:
+ *     summary: Get all unassigned students in alphabetical order.
+ *     tags: [Student]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of unassigned students.
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/unassigned", authenticateJWT, requireAdmin, getUnassignedStudents);
 
 export default router;

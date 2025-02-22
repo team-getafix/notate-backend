@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { registerUser, loginUser, getCurrentUser, changePassword } from "../controllers/auth.controller";
+import { registerUser, loginUser, getCurrentUser, changePassword, getUsersByRole } from "../controllers/auth.controller";
 import { authenticateJWT, requireAdmin, requireRoles } from "../middlewares/jwt.middleware";
 import { validationMiddleware } from "../middlewares/validation.middleware";
 import { ChangePasswordDto } from "../dtos/user.dto";
@@ -137,5 +137,8 @@ router.post(
   validationMiddleware(ChangePasswordDto),
   changePassword
 );
+
+// used internally, dont think swagger is necessary.
+router.get('/users', authenticateJWT, requireAdmin, getUsersByRole);
 
 export default router;

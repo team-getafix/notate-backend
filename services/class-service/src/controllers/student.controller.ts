@@ -43,3 +43,33 @@ export const getMyClasses = async (
     next(error);
   }
 };
+
+import { authServiceClient } from "../utils/service-client";
+
+export const getUnassignedStudents = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { data: students } = await authServiceClient.get("/auth/users", {
+      params: { role: "student" },
+      headers: { Authorization: req.headers.authorization! }
+    });
+
+    const classes = await prisma.class.findMany({ select: { studentIds: true } });
+    const assignedStudentIds = new Set(classes.flatMap(c => c.studentIds));
+
+    const unassigned = students
+      .filter((s: any) => !assignedStudentIds.has(s.id))
+      .sort((a: any, b: any) => {
+        const lastCompare = a.lastName.localeCompare(b.lastName);
+
+        return lastCompare !== 0 ? lastCompare : a.firstName.localeCompare(b.firstName);
+      });
+
+    res.json(unassigned);
+  } catch (error) {
+    next(error);
+  }
+};

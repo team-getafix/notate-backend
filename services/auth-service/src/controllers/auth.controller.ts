@@ -153,3 +153,27 @@ export const changePassword = async (
     next(error);
   }
 };
+
+export const getUsersByRole = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { role } = req.query;
+    if (!role || typeof role !== "string") {
+      res.status(400).json({ error: "role query parameter is required" });
+
+      return;
+    }
+
+    const users = await prisma.user.findMany({
+      where: { role },
+      select: { id: true, email: true, firstName: true, lastName: true }
+    });
+
+    res.json(users);
+  } catch (error) {
+    next(error);
+  }
+};
