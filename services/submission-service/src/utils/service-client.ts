@@ -16,6 +16,8 @@ export const authServiceClient = axios.create({
 
 export const getSubject = async (subjectId: string, authHeader: string): Promise<Subject | null> => {
   try {
+    console.log("getting subjects from class service");
+
     const { data } = await classServiceClient.get(`/subjects/${subjectId}`, {
       headers: { Authorization: authHeader },
     });
@@ -30,6 +32,8 @@ export const getSubject = async (subjectId: string, authHeader: string): Promise
 
 export const validateSubjectExists = async (subjectId: string, authHeader: string) => {
   try {
+    console.log("validating subject exists from class service");
+
     const { status } = await classServiceClient.head(`/subjects/${subjectId}`, {
       headers: { Authorization: authHeader }
     });
@@ -43,6 +47,8 @@ export const validateSubjectExists = async (subjectId: string, authHeader: strin
 
 export const verifyStudentEnrollment = async (studentId: string, subjectId: string, authHeader: string): Promise<boolean> => {
   try {
+    console.log("verifying student enrollment from class service");
+
     const { data } = await classServiceClient.get(`/classes/enrollment/${studentId}/${subjectId}`, {
       headers: { Authorization: authHeader },
     });

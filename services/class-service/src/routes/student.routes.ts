@@ -43,7 +43,7 @@ const router = Router();
  *       500:
  *         description: Server error.
  */
-router.get("/:id/subjects", requireTeacherAdmin, getStudentSubjects);
+router.get("/:id/subjects", authenticateJWT, getStudentSubjects);
 
 /**
  * @swagger

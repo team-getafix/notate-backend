@@ -38,6 +38,7 @@ export const getStudentAssignments = async (req: AuthRequest, res: Response) => 
     res.json(formatted);
   } catch (error: any) {
     console.error('Error fetching assignments:', error);
+
     res.status(500).json({
       error: error.response?.data?.error || 'Failed to fetch assignments'
     });

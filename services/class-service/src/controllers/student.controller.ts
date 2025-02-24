@@ -4,9 +4,10 @@ import { type AuthRequest } from "../middlewares/auth.middleware";
 
 export const getStudentSubjects = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const { id } = req.params;
+    const studentId = req.user?.role === "student" ? req.user.id : req.params.id;
+
     const classes = await prisma.class.findMany({
-      where: { studentIds: { has: id } },
+      where: { studentIds: { has: studentId } },
       include: { subjects: true }
     });
 
@@ -21,7 +22,8 @@ export const getStudentSubjects = async (req: AuthRequest, res: Response, next: 
   } catch (error) {
     next(error);
   }
-}
+};
+
 
 export const getMyClasses = async (
   req: AuthRequest,

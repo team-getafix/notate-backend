@@ -3,12 +3,17 @@ import dotenv from "dotenv";
 import { createProxyMiddleware } from "http-proxy-middleware";
 
 const bodyReconstructor = (proxyReq: any, req: any, res: any) => {
+  if (req.headers['content-type'] && req.headers['content-type'].includes('multipart/form-data')) {
+    return;
+  }
+
   if (req.body) {
     const bodyData = JSON.stringify(req.body);
     proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
     proxyReq.write(bodyData);
   }
 };
+
 
 dotenv.config();
 const app = express();
