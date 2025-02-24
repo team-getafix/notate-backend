@@ -6,13 +6,24 @@ export const createClass = async (req: AuthRequest, res: Response, next: NextFun
   try {
     const { name, subjectIds, studentIds } = req.body;
 
+    const existingSubjects = await prisma.subject.findMany({
+      where: { id: { in: subjectIds } },
+      select: { id: true },
+    });
+
+    const validSubjectIds = existingSubjects.map(subject => subject.id);
+
+    if (validSubjectIds.length !== subjectIds.length) {
+      res.status(400).json({ error: "one or more subjects do not exist" });
+
+      return;
+    }
+
     const newClass = await prisma.class.create({
       data: {
         name,
         studentIds: studentIds || [],
-        subjects: subjectIds && Array.isArray(subjectIds) && subjectIds.length > 0
-          ? { connect: subjectIds.map((id: string) => ({ id })) }
-          : undefined,
+        subjects: { connect: validSubjectIds.map(id => ({ id })) },
       },
       include: { subjects: true },
     });
@@ -22,6 +33,7 @@ export const createClass = async (req: AuthRequest, res: Response, next: NextFun
     next(error);
   }
 };
+
 
 export const getClasses = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
