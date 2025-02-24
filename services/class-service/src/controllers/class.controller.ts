@@ -1,6 +1,6 @@
 import type { Response, NextFunction } from "express";
-import prisma from "../utils/prisma";
 import { AuthRequest } from "../middlewares/auth.middleware";
+import prisma from "../utils/prisma";
 
 export const createClass = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
