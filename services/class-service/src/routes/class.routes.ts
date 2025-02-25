@@ -13,6 +13,7 @@ import {
   authenticateJWT,
   requireAdmin,
   requireRoles,
+  requireTeacherAdmin,
   requireTeacherForSubject
 } from "../middlewares/auth.middleware";
 
@@ -71,7 +72,7 @@ router.post("/", authenticateJWT, requireAdmin, validationMiddleware(CreateClass
  *       200:
  *         description: A list of classes
  */
-router.get("/", authenticateJWT, requireAdmin, getClasses);
+router.get("/", authenticateJWT, requireTeacherAdmin, getClasses);
 
 /**
  * @swagger

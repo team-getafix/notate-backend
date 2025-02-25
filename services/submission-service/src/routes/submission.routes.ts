@@ -1,6 +1,6 @@
 import { Router, Response } from "express";
 import { authenticateJWT, requireTeacherAdmin, requireStudent, requireAdmin, AuthRequest } from "../middlewares/auth.middleware";
-import { createSubmission, gradeSubmission, getSubmission, getMySubmissions, getAssignmentSubmissions, downloadFile, getAllSubmissions } from "../controllers/submission.controller";
+import { createSubmission, gradeSubmission, getSubmission, getMySubmissions, getAssignmentSubmissions, getAllSubmissions } from "../controllers/submission.controller";
 import { validationMiddleware } from "../middlewares/validation.middleware";
 import { GradeSubmissionDto } from "../dtos/submission.dto";
 import { submissionAccess } from "../middlewares/access.middleware";
@@ -170,6 +170,7 @@ router.get('/:submissionId/file',
 
       res.setHeader('Content-Type', 'application/octet-stream');
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
 
       const fileStream = fs.createReadStream(submission.filePath);
       fileStream.pipe(res);

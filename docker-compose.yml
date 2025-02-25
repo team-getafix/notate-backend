@@ -58,7 +58,7 @@ services:
     depends_on:
       - postgres
     environment:
-      - DATABASE_URL=postgresql://admin:compsci@postgres:5432/notatedb?schema=class
+      - DATABASE_URL=postgresql://admin:compsci@postgres:5432/notatedb?schema=submission
       - POSTGRES_PASSWORD=compsci
       - STORAGE_ROOT=/app/uploads
     stop_signal: SIGTERM

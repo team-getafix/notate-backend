@@ -1,5 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import prisma from "../utils/prisma";
+import { AuthRequest } from "../middlewares/auth.middleware";
+import { HttpStatusCode } from "axios";
 
 export const createSubject = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -23,17 +25,33 @@ export const createSubject = async (req: Request, res: Response, next: NextFunct
   }
 };
 
-export const getSubjects = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getSubjects = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const subjects = await prisma.subject.findMany({
-      include: { classes: true },
-    });
+    let subjects;
+
+    if (req.user?.role === "teacher") {
+      subjects = await prisma.subject.findMany({
+        where: {
+          teacherIds: {
+            has: req.user.id,
+          },
+        },
+        include: { classes: true, subjectAssignments: true },
+      });
+    } else if (req.user?.role === "admin") {
+      subjects = await prisma.subject.findMany({
+        include: { classes: true },
+      });
+    } else {
+      res.status(401).json({ error: "not enough permissions" });
+    }
 
     res.json(subjects);
   } catch (error) {
     next(error);
   }
 };
+
 
 export const getSubjectById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {

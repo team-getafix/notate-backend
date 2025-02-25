@@ -59,7 +59,7 @@ router.post("/", authenticateJWT, requireAdmin, validationMiddleware(CreateSubje
  *       200:
  *         description: A list of subjects
  */
-router.get("/", authenticateJWT, requireAdmin, getSubjects);
+router.get("/", authenticateJWT, requireTeacherAdmin, getSubjects);
 
 /**
  * @swagger

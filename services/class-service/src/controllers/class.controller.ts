@@ -34,12 +34,30 @@ export const createClass = async (req: AuthRequest, res: Response, next: NextFun
   }
 };
 
-
 export const getClasses = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const classes = await prisma.class.findMany({
-      include: { subjects: true },
-    });
+    let classes;
+
+    if (req.user?.role === "admin") {
+      classes = await prisma.class.findMany({
+        include: { subjects: true },
+      });
+    } else if (req.user?.role === "teacher") {
+      classes = await prisma.class.findMany({
+        include: { subjects: true },
+        where: {
+          subjects: {
+            some: {
+              teacherIds: {
+                has: req.user.id,
+              },
+            },
+          },
+        },
+      });
+    } else {
+      res.status(401).json({ error: "not enough permissions" });
+    }
 
     res.json(classes);
   } catch (error) {
