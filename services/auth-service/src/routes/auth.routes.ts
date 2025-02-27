@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { registerUser, loginUser, getCurrentUser, changePassword, getUsersByRole, getAllUsers, deleteUser, updateUser } from "../controllers/auth.controller";
+import { registerUser, loginUser, getCurrentUser, changePassword, getUsersByRole, getAllUsers, deleteUser, updateUser, getUserById } from "../controllers/auth.controller";
 import { authenticateJWT, requireAdmin, requireRoles, requireTeacher } from "../middlewares/jwt.middleware";
 import { validationMiddleware } from "../middlewares/validation.middleware";
 import { ChangePasswordDto } from "../dtos/user.dto";
@@ -162,6 +162,8 @@ router.post(
  *         description: Internal server error
  */
 router.get('/users', authenticateJWT, requireRoles(["admin", "teacher"]), getUsersByRole);
+
+router.get("/users/:id", authenticateJWT, requireAdmin, getUserById);
 
 /**
  * @swagger

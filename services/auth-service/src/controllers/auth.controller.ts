@@ -239,3 +239,24 @@ export const updateUser = async (
     next(error);
   }
 }
+
+export const getUserById = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    const existingUser = prisma.user.findUnique({ where: { id } });
+    if (!existingUser) {
+      res.status(404).json({ error: "user not found" });
+    }
+
+    const user = await prisma.user.findFirst({ where: { id } });
+
+    res.status(201).json(user);
+  } catch (error) {
+    next(error);
+  }
+}

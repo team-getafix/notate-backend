@@ -85,9 +85,18 @@ export const getMySubmissions = async (
     });
 
     const enriched = await Promise.all(submissions.map(async (sub) => {
-      const subjectResponse = await classServiceClient.get(`/subjects/${sub.assignment.subjectId}`, {
-        headers: { Authorization: req.headers.authorization! }
-      });
+      let subjectName = "Unknown";
+      try {
+        const subjectResponse = await classServiceClient.get(`/subjects/${sub.assignment.subjectId}`, {
+          headers: { Authorization: req.headers.authorization! }
+        });
+        subjectName = subjectResponse.data.name;
+      } catch (err) {
+        console.error(
+          `Failed to fetch subject for assignment ${sub.assignment.subjectId}:`,
+          err.message || err
+        );
+      }
 
       return {
         id: sub.id,
@@ -96,13 +105,13 @@ export const getMySubmissions = async (
         submittedAt: sub.createdAt,
         grade: sub.grade,
         status: sub.grade ? "graded" : "pending",
-        downloadUrl: `/api/submissions/${sub.id}/file`, // ADD HERE
-        subjectName: subjectResponse.data.name,
+        downloadUrl: `/api/submissions/${sub.id}/file`,
+        subjectName,
         feedbackComment: sub.feedbackComment,
-      }
+      };
     }));
 
-    res.json(enriched);
+    res.status(200).json(enriched);
   } catch (error) {
     next(error);
   }

@@ -1,6 +1,7 @@
 import type { Response, NextFunction } from "express";
-import prisma from "../utils/prisma";
 import { type AuthRequest } from "../middlewares/auth.middleware";
+import { authServiceClient } from "../utils/service-client";
+import prisma from "../utils/prisma";
 
 export const getStudentSubjects = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -46,7 +47,6 @@ export const getMyClasses = async (
   }
 };
 
-import { authServiceClient } from "../utils/service-client";
 
 export const getUnassignedStudents = async (
   req: AuthRequest,
