@@ -25,7 +25,6 @@ export const assignmentAccess = async (
       return;
     }
 
-    // Teacher validation
     if (user.role === "teacher") {
       if (assignment.teacherId !== user.id) {
         res.status(403).json({ error: "Not your assignment" })
@@ -33,7 +32,6 @@ export const assignmentAccess = async (
         return;
       }
 
-      // Verify subject assignment
       const subject = await getSubject(assignment.subjectId, req.headers.authorization!);
       if (!subject?.teacherIds.includes(user.id)) {
         res.status(403).json({ error: "No longer assigned to this subject" })
@@ -42,7 +40,6 @@ export const assignmentAccess = async (
       }
     }
 
-    // Student can only view (handled in controller)
     next();
   } catch (error) {
     console.error("Assignment access check failed:", error);

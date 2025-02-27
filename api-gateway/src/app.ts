@@ -17,7 +17,6 @@ const bodyReconstructor = (proxyReq: any, req: any, res: any) => {
 
 dotenv.config();
 const app = express();
-app.use(express.json());
 
 const authProxy = createProxyMiddleware({
   target: 'http://auth-service:4001',

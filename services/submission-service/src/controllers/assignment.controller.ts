@@ -4,6 +4,17 @@ import { EnrichedAssignment, EnrichedSubmission, Submission } from "../types";
 import { AuthRequest } from "../middlewares/auth.middleware";
 import prisma from "../utils/prisma";
 
+export const getAllAssignments = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const assignments = await prisma.assignment.findMany();
+
+    res.json(assignments);
+  } catch (error) {
+    console.error("Assignment fetching error:", error);
+    res.status(500).json({ error: "failed to get all assignments" });
+  }
+}
+
 export const createAssignment = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { title, description, dueDate, subjectId } = req.body;
@@ -149,7 +160,7 @@ export const getMyAssignments = async (
   try {
     const assignments = await prisma.assignment.findMany({
       where: { teacherId: req.user!.id },
-      include: { submissions: { select: { id: true } } },
+      include: { submissions: { select: { id: true, grade: true } } },
       orderBy: { dueDate: "asc" }
     });
 
@@ -158,7 +169,9 @@ export const getMyAssignments = async (
       title: a.title,
       dueDate: a.dueDate,
       submissionsCount: a.submissions.length,
-      ungradedCount: a.submissions.filter(s => !(s as Submission).grade).length
+      subjectId: a.subjectId,
+      description: a.description,
+      ungradedCount: a.submissions.filter(s => s.grade === null).length
     })));
   } catch (error) {
     next(error);

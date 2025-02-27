@@ -13,6 +13,7 @@ export const getStudentAssignments = async (req: AuthRequest, res: Response, nex
       },
       orderBy: { dueDate: 'asc' },
     });
+
     res.status(200).json(assignments);
   } catch (error) {
     next(error);

@@ -1,11 +1,31 @@
 import { Router } from 'express';
-import { authenticateJWT, requireTeacherAdmin } from '../middlewares/auth.middleware';
+import { authenticateJWT, requireAdmin, requireTeacherAdmin } from '../middlewares/auth.middleware';
 import { assignmentAccess } from '../middlewares/access.middleware';
-import { createAssignment, deleteAssignment, getAssignment, getAssignmentsBySubject, getMyAssignments, updateAssignment } from '../controllers/assignment.controller';
+import { createAssignment, deleteAssignment, getAllAssignments, getAssignment, getAssignmentsBySubject, getMyAssignments, updateAssignment } from '../controllers/assignment.controller';
 import { validationMiddleware } from '../middlewares/validation.middleware';
 import { CreateAssignmentDto, UpdateAssignmentDto } from '../dtos/assignment.dto';
 
 const router = Router();
+
+/**
+ * @swagger
+ * /assignments:
+ *   get:
+ *     summary: Get all assignments
+ *     tags:
+ *       - Assignments
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: All assignments
+ */
+router.get(
+  "/",
+  authenticateJWT,
+  requireAdmin,
+  getAllAssignments
+);
 
 /**
  * @swagger

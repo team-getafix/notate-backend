@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { AuthRequest } from "../middlewares/auth.middleware";
+import { classServiceClient } from "../utils/service-client";
 import prisma from "../utils/prisma";
 import path from "path";
 import fs from "fs";
@@ -71,28 +72,6 @@ export const getSubmission = async (req: Request, res: Response, next: NextFunct
   }
 };
 
-export const downloadFile = async (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    console.log(req.params[0]);
-    const filePath = path.join(process.env.STORAGE_ROOT!, req.params[0]);
-    console.log(filePath);
-
-    if (!fs.existsSync(filePath)) {
-      res.status(404).json({ error: "file not found" });
-
-      return;
-    }
-
-    res.sendFile(filePath);
-  } catch (error) {
-    next(error);
-  }
-};
-
 export const getMySubmissions = async (
   req: AuthRequest,
   res: Response,
@@ -105,14 +84,22 @@ export const getMySubmissions = async (
       orderBy: { createdAt: "desc" }
     });
 
-    const enriched = submissions.map(sub => ({
-      id: sub.id,
-      assignmentTitle: sub.assignment.title,
-      dueDate: sub.assignment.dueDate,
-      submittedAt: sub.createdAt,
-      grade: sub.grade,
-      status: sub.grade ? "graded" : "pending",
-      downloadUrl: `/api/submissions/${sub.id}/file` // ADD HERE
+    const enriched = await Promise.all(submissions.map(async (sub) => {
+      const subjectResponse = await classServiceClient.get(`/subjects/${sub.assignment.subjectId}`, {
+        headers: { Authorization: req.headers.authorization! }
+      });
+
+      return {
+        id: sub.id,
+        assignmentTitle: sub.assignment.title,
+        dueDate: sub.assignment.dueDate,
+        submittedAt: sub.createdAt,
+        grade: sub.grade,
+        status: sub.grade ? "graded" : "pending",
+        downloadUrl: `/api/submissions/${sub.id}/file`, // ADD HERE
+        subjectName: subjectResponse.data.name,
+        feedbackComment: sub.feedbackComment,
+      }
     }));
 
     res.json(enriched);
