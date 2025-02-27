@@ -200,7 +200,7 @@ export const deleteUser = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { id } = req.body;
+    const { id } = req.params;
     const users = await prisma.user.delete({
       where: { id }
     });
