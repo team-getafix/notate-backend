@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { registerUser, loginUser, getCurrentUser, changePassword, getUsersByRole } from "../controllers/auth.controller";
+import { registerUser, loginUser, getCurrentUser, changePassword, getUsersByRole, getAllUsers, deleteUser, updateUser } from "../controllers/auth.controller";
 import { authenticateJWT, requireAdmin, requireRoles, requireTeacher } from "../middlewares/jwt.middleware";
 import { validationMiddleware } from "../middlewares/validation.middleware";
 import { ChangePasswordDto } from "../dtos/user.dto";
@@ -138,7 +138,104 @@ router.post(
   changePassword
 );
 
-// used internally, dont think swagger is necessary.
+/**
+ * @swagger
+ * /auth/users:
+ *   get:
+ *     summary: Get users by role
+ *     description: Retrieves a list of users based on their role. Accessible to admins and teachers.
+ *     tags: [Users]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: role
+ *         schema:
+ *           type: string
+ *         description: Role of the users to retrieve (e.g., admin, teacher, student)
+ *     responses:
+ *       200:
+ *         description: A list of users filtered by role
+ *       403:
+ *         description: Unauthorized access
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/users', authenticateJWT, requireRoles(["admin", "teacher"]), getUsersByRole);
+
+/**
+ * @swagger
+ * /auth/all-users:
+ *   get:
+ *     summary: Get all users
+ *     description: Retrieves all users. Accessible only to admins.
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of all users
+ *       403:
+ *         description: Unauthorized access
+ *       500:
+ *         description: Internal server error
+ */
+router.get('/all-users', authenticateJWT, requireAdmin, getAllUsers);
+
+/**
+ * @swagger
+ * /auth/users/{id}:
+ *   delete:
+ *     summary: Delete a user
+ *     description: Deletes a user by ID. Accessible only to admins.
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The user ID to delete
+ *     responses:
+ *       200:
+ *         description: User successfully deleted
+ *       403:
+ *         description: Unauthorized access
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+router.delete("/users/:id", authenticateJWT, requireAdmin, deleteUser);
+
+/**
+ * @swagger
+ * /auth/users/{id}:
+ *   patch:
+ *     summary: Update a user
+ *     description: Updates a user by ID. Accessible only to admins.
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The user ID to update
+ *     responses:
+ *       200:
+ *         description: User successfully deleted
+ *       403:
+ *         description: Unauthorized access
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+router.patch("/users/:id", authenticateJWT, requireAdmin, updateUser);
 
 export default router;

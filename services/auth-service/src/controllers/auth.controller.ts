@@ -177,3 +177,65 @@ export const getUsersByRole = async (
     next(error);
   }
 };
+
+export const getAllUsers = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const users = await prisma.user.findMany({
+      select: { id: true, email: true, firstName: true, lastName: true, role: true }
+    });
+
+    res.json(users);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteUser = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.body;
+    const users = await prisma.user.delete({
+      where: { id }
+    });
+
+    res.status(201).json({ message: "user deleted successfully" });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export const updateUser = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { firstName, lastName, role } = req.body;
+
+    const existingUser = prisma.user.findUnique({ where: { id } });
+    if (!existingUser) {
+      res.status(404).json({ error: "user not found" });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: {
+        firstName,
+        lastName,
+        role
+      }
+    });
+
+    res.status(201).json({ message: "user deleted successfully" });
+  } catch (error) {
+    next(error);
+  }
+}

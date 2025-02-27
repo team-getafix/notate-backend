@@ -37,3 +37,9 @@ export class AddSubjectToClassDto {
   @IsNotEmpty()
   subjectId!: string;
 }
+
+export class AddStudentToClassDto {
+  @IsString()
+  @IsNotEmpty()
+  studentId!: string;
+}

@@ -7,6 +7,7 @@ import {
   deleteClass,
   getClassSubjects,
   addSubjectToClass,
+  addStudentToClass,
 } from "../controllers/class.controller";
 
 import {
@@ -18,7 +19,7 @@ import {
 } from "../middlewares/auth.middleware";
 
 import { validationMiddleware } from "../middlewares/validation.middleware";
-import { AddSubjectToClassDto, CreateClassDto, UpdateClassDto } from "../dtos/class.dto";
+import { AddStudentToClassDto, AddSubjectToClassDto, CreateClassDto, UpdateClassDto } from "../dtos/class.dto";
 
 const router = Router();
 
@@ -256,6 +257,6 @@ router.put("/:classId/subjects", authenticateJWT, requireAdmin, validationMiddle
  *       404:
  *         description: Class not found
  */
-router.put("/:classId/students", authenticateJWT, requireAdmin, validationMiddleware(AddSubjectToClassDto), addSubjectToClass);
+router.put("/:classId/students", authenticateJWT, requireAdmin, validationMiddleware(AddStudentToClassDto), addStudentToClass);
 
 export default router;

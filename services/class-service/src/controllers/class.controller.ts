@@ -195,7 +195,7 @@ export const addStudentToClass = async (
 ): Promise<void> => {
   try {
     const { classId } = req.params;
-    const { userId } = req.body;
+    const { studentId } = req.body;
 
     const existingClass = await prisma.class.findUnique({ where: { id: classId } });
     if (!existingClass) {
@@ -208,7 +208,7 @@ export const addStudentToClass = async (
       where: { id: classId },
       data: {
         studentIds: {
-          push: userId,
+          push: studentId,
         },
       },
       include: { subjects: true },
