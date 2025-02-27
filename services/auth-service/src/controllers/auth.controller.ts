@@ -218,7 +218,7 @@ export const updateUser = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
-    const { firstName, lastName, role } = req.body;
+    const { firstName, lastName, email, role } = req.body;
 
     const existingUser = prisma.user.findUnique({ where: { id } });
     if (!existingUser) {
@@ -230,6 +230,7 @@ export const updateUser = async (
       data: {
         firstName,
         lastName,
+        email,
         role
       }
     });
